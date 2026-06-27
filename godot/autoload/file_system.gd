@@ -292,9 +292,9 @@ func download_database_manifest(app_id: String, manifest_id: String, destination
 			"-dir", destination_dir,
 		];
 		if(!username.is_empty()):
-			args.append_array(["-username", username])
+			args.append_array(["-username", "\"%s\"" % username])
 		if(!password.is_empty()):
-			args.append_array(["-password", password])
+			args.append_array(["-password", "\"%s\"" % password])
 		var output: Array = []
 		var exit_code := OS.execute(depot_downloader_path, args, output, true, false)
 		if(exit_code != 0):

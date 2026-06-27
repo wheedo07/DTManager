@@ -266,6 +266,12 @@ func download_database_manifest(app_id: String, manifest_id: String, destination
 	if(depot_downloader_path.is_empty()):
 		return Util.Stats.new(false, tr("error.depotdownloader_executable_not_found"))
 
+	var game_result := load_database_game(app_id)
+	if(!game_result.ok):
+		return game_result
+	if(!_database_game_has_manifest(game_result.data, manifest_id)):
+		return Util.Stats.new(false, tr("error.database_manifest_not_listed"))
+
 	var manifest_result := load_database_manifest(app_id, manifest_id)
 	if(!manifest_result.ok):
 		return manifest_result
@@ -920,6 +926,17 @@ func _directory_has_entries(path: String) -> bool:
 	if(!DirAccess.dir_exists_absolute(path)):
 		return false
 	return !DirAccess.get_files_at(path).is_empty() || !DirAccess.get_directories_at(path).is_empty()
+
+func _database_game_has_manifest(game_data: Dictionary, manifest_id: String) -> bool:
+	var manifests = game_data.get("manifests", [])
+	if(typeof(manifests) != TYPE_ARRAY):
+		return false
+	for entry in manifests:
+		if(typeof(entry) != TYPE_DICTIONARY):
+			continue
+		if(str(entry.get("manifest_id", "")) == manifest_id):
+			return true
+	return false
 
 func _parse_url(url: String) -> Dictionary:
 	var regex := RegEx.new()

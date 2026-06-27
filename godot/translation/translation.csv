@@ -75,3 +75,4 @@ error.http_request_failed,HTTP request failed.,HTTP 요청에 실패했습니다
 error.depotdownloader_executable_not_found,DepotDownloader executable was not found.,DepotDownloader 실행 파일을 찾을 수 없습니다.
 error.depot_download_failed,"Depot download failed: %s","Depot 다운로드 실패: %s"
 error.manifest_cache_not_found,Manifest cache was not found.,매니페스트 캐시를 찾지 못했습니다.
+error.database_manifest_not_listed,Manifest was not listed in game.json.,매니페스트가 game.json 목록에 없습니다.

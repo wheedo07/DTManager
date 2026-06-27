@@ -3,7 +3,7 @@ extends AcceptDialog
 signal app_settings_saved(steam_username: String, steam_password: String)
 signal item_settings_saved(name_value: String, steam_game_path: String, thumbnail_path: String, is_mod: bool)
 signal maintenance_requested(action: String)
-signal steam_account_check_requested(steam_username: String, steam_password: String)
+signal steam_login_requested(steam_username: String, steam_password: String)
 
 @onready var tabs: TabContainer = %Tabs
 @onready var app_section: VBoxContainer = %AppSection
@@ -17,7 +17,7 @@ signal steam_account_check_requested(steam_username: String, steam_password: Str
 @onready var steam_username_edit: LineEdit = %SteamUsernameEdit
 @onready var steam_password_label: Label = %SteamPasswordLabel
 @onready var steam_password_edit: LineEdit = %SteamPasswordEdit
-@onready var check_steam_account_button: Button = %CheckSteamAccountButton
+@onready var steam_login_button: Button = %SteamLoginButton
 @onready var browse_button: Button = %BrowseButton
 @onready var folder_dialog: FileDialog = %SteamGamePathDialog
 @onready var thumbnail_browse_button: Button = %ThumbnailBrowseButton
@@ -32,7 +32,7 @@ var has_item_settings := false
 func _ready() -> void:
 	browse_button.pressed.connect(_on_browse_pressed)
 	thumbnail_browse_button.pressed.connect(_on_thumbnail_browse_pressed)
-	check_steam_account_button.pressed.connect(func() -> void: steam_account_check_requested.emit(steam_username_edit.text.strip_edges(), steam_password_edit.text))
+	steam_login_button.pressed.connect(func() -> void: steam_login_requested.emit(steam_username_edit.text.strip_edges(), steam_password_edit.text))
 	sync_database_button.pressed.connect(func() -> void: maintenance_requested.emit("sync_database"))
 	download_patchers_button.pressed.connect(func() -> void: maintenance_requested.emit("download_patchers"))
 	confirmed.connect(_on_confirmed)

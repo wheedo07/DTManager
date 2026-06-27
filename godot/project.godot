@@ -21,6 +21,7 @@ config/icon="uid://dengam76rnj77"
 
 Global="*uid://7wovcjcl05ye"
 Filesys="*uid://jkhp32h0r6qp"
+Steam="*uid://bmuk6otldbaw6"
 
 [debug]
 

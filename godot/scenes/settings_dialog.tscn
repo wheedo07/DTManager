@@ -67,10 +67,10 @@ layout_mode = 2
 placeholder_text = "ui.settings.steam_password_placeholder"
 secret = true
 
-[node name="CheckSteamAccountButton" type="Button" parent="Margin/Root/Tabs/AppSection" unique_id=180006]
+[node name="SteamLoginButton" type="Button" parent="Margin/Root/Tabs/AppSection" unique_id=180006]
 unique_name_in_owner = true
 layout_mode = 2
-text = "ui.settings.check_steam_account"
+text = "ui.settings.steam_login"
 
 [node name="MaintenanceRow" type="HBoxContainer" parent="Margin/Root/Tabs/AppSection" unique_id=200014991]
 layout_mode = 2

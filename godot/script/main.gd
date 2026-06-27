@@ -42,7 +42,7 @@ func _ready() -> void:
 	game_settings_dialog.app_settings_saved.connect(_on_app_settings_saved)
 	game_settings_dialog.item_settings_saved.connect(_on_item_settings_saved)
 	game_settings_dialog.maintenance_requested.connect(_on_maintenance_requested)
-	game_settings_dialog.steam_account_check_requested.connect(_on_steam_account_check_requested)
+	game_settings_dialog.steam_login_requested.connect(_on_steam_login_requested)
 	loading_overlay.visible = false
 	if(!play_button.pressed.is_connected(func() -> void: _on_action_pressed("play"))):
 		play_button.pressed.connect(func() -> void: _on_action_pressed("play"))
@@ -64,6 +64,8 @@ func _ready() -> void:
 	_refresh_all()
 
 func _process(_delta: float) -> void:
+	if(loading_active):
+		loading_label.text = Util.get_loading_status(loading_label.text)
 	if(worker_thread == null || worker_thread.is_alive()): return;
 	var result = worker_thread.wait_to_finish();
 	worker_thread = null;
@@ -187,6 +189,9 @@ func _set_loading(active: bool, message: String = "Loading...") -> void:
 		add_game_dialog.hide()
 		add_mod_dialog.hide()
 		game_settings_dialog.hide()
+		Util.set_loading_status(message)
+	else:
+		Util.clear_loading_status()
 	loading_overlay.visible = active;
 	loading_label.text = message;
 
@@ -344,11 +349,11 @@ func _open_selected_folder() -> void:
 		return;
 
 	if(!_has_selected_mod()):
-		OS.shell_open(Filesys.GamePath.path_join(str(_selected_game().get("name", ""))));
+		Global.open_directory(Filesys.GamePath.path_join(str(_selected_game().get("name", ""))));
 		return;
 
 	var mod_path := Filesys.ModPath.path_join(str(_selected_game().get("name", ""))).path_join(str(_selected_mod().get("name", "")));
-	OS.shell_open(mod_path);
+	Global.open_directory(mod_path);
 
 func _delete_selected_item() -> void:
 	if(games.is_empty()):
@@ -405,9 +410,9 @@ func _on_maintenance_requested(action: String) -> void:
 		_:
 			Global.alert(tr("error.unknown_action"));
 
-func _on_steam_account_check_requested(steam_username: String, steam_password: String) -> void:
+func _on_steam_login_requested(steam_username: String, steam_password: String) -> void:
 	if(loading_active): return;
-	_start_worker("check_steam_account", "Checking Steam account...", Callable(self, "_thread_check_steam_account").bind(steam_username, steam_password))
+	_start_worker("steam_login", "Logging in to Steam...", Callable(self, "_thread_steam_login").bind(steam_username, steam_password))
 
 func _thread_add_game(executable_path: String, game_name: String) -> Dictionary:
 	return Filesys.addGame(executable_path, game_name).to_dict();
@@ -416,13 +421,13 @@ func _thread_add_mod(game_name: String, source_path: String, mod_name: String, b
 	return Filesys.addMod(game_name, source_path, mod_name, base_mod_name).to_dict();
 
 func _thread_sync_database() -> Dictionary:
-	return Filesys.sync_database_from_repository().to_dict();
+	return Steam.check_database().to_dict();
 
 func _thread_download_patchers() -> Dictionary:
-	return Filesys.ensure_patchers_from_database().to_dict();
+	return Steam.ensure_patchers().to_dict();
 
-func _thread_check_steam_account(steam_username: String, steam_password: String) -> Dictionary:
-	return Filesys.check_steam_account(steam_username, steam_password).to_dict();
+func _thread_steam_login(steam_username: String, steam_password: String) -> Dictionary:
+	return Steam.login(steam_username, steam_password).to_dict();
 
 func _thread_save_app_settings(steam_username: String, steam_password: String) -> Dictionary:
 	return Filesys.save_app_config({
@@ -451,7 +456,7 @@ func _thread_save_game_settings(old_name: String, new_name: String, steam_game_p
 	config.erase("steam_uri")
 	config.erase("steam_game_path")
 	if(!steam_game_path.is_empty()):
-		var steam_info := Filesys.detect_steam_install(steam_game_path)
+		var steam_info := Steam.detect_install(steam_game_path)
 		if(steam_info.is_empty()):
 			return Util.Stats.new(false, tr("error.steam_manifest_not_found")).to_dict()
 		config["steam_uri"] = str(steam_info.get("steam_uri", ""))

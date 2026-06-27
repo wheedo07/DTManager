@@ -53,7 +53,7 @@ func login(username: String, password: String) -> Util.Stats:
 		"-manifest-only",
 		"-dir", temp_dir,
 	]
-	Util.set_loading_status("Logging in to Steam...")
+	Util.set_loading_status(Util.trans("status.steam_login_waiting_guard"))
 	var exit_code := OS.execute(depot_downloader_path, args, output, true, false)
 	Filesys.delete_directory_if_exists(temp_dir)
 	if(exit_code != 0):

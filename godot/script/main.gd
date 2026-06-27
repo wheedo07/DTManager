@@ -39,7 +39,8 @@ var loading_active := false
 func _ready() -> void:
 	add_game_dialog.game_created.connect(_on_game_created)
 	add_mod_dialog.mod_created.connect(_on_mod_created)
-	game_settings_dialog.settings_saved.connect(_on_game_settings_saved)
+	game_settings_dialog.app_settings_saved.connect(_on_app_settings_saved)
+	game_settings_dialog.item_settings_saved.connect(_on_item_settings_saved)
 	game_settings_dialog.maintenance_requested.connect(_on_maintenance_requested)
 	loading_overlay.visible = false
 	if(!play_button.pressed.is_connected(func() -> void: _on_action_pressed("play"))):
@@ -282,8 +283,14 @@ func _on_refresh_pressed() -> void:
 
 func _on_settings_pressed() -> void:
 	if(loading_active): return;
+	var app_config_result := Filesys.load_app_config();
+	if(!app_config_result.ok):
+		Global.alert(app_config_result.message);
+		return;
+	var item_config := {}
+	var is_mod := false
 	if(games.is_empty()):
-		Global.alert(tr("error.no_game_selected"));
+		game_settings_dialog.open_dialog(app_config_result.data, item_config, false);
 		return;
 	var game_name := str(_selected_game().get("name", ""));
 	if(_has_selected_mod()):
@@ -292,13 +299,16 @@ func _on_settings_pressed() -> void:
 		if(!mod_config_result.ok):
 			Global.alert(mod_config_result.message);
 			return;
-		game_settings_dialog.open_dialog(mod_config_result.data, true);
+		item_config = mod_config_result.data
+		is_mod = true
+		game_settings_dialog.open_dialog(app_config_result.data, item_config, is_mod);
 		return;
 	var config_result := Filesys.load_game_config(game_name);
 	if(!config_result.ok):
 		Global.alert(config_result.message);
 		return;
-	game_settings_dialog.open_dialog(config_result.data, false);
+	item_config = config_result.data
+	game_settings_dialog.open_dialog(app_config_result.data, item_config, false);
 
 func _on_action_pressed(action: String) -> void:
 	match action:
@@ -352,7 +362,10 @@ func _delete_selected_item() -> void:
 func _on_game_created(game_name: String, executable_path: String) -> void:
 	_start_worker("add_game", "Copying game files...", Callable(self, "_thread_add_game").bind(executable_path, game_name), {"game_name": game_name})
 
-func _on_game_settings_saved(new_name: String, steam_game_path: String, thumbnail_path: String, is_mod: bool) -> void:
+func _on_app_settings_saved(steam_username: String, steam_password: String) -> void:
+	_start_worker("app_settings", "Saving app settings...", Callable(self, "_thread_save_app_settings").bind(steam_username, steam_password))
+
+func _on_item_settings_saved(new_name: String, steam_game_path: String, thumbnail_path: String, is_mod: bool) -> void:
 	if(games.is_empty()):
 		Global.alert(tr("error.no_game_selected"));
 		return;
@@ -398,6 +411,12 @@ func _thread_sync_database() -> Dictionary:
 
 func _thread_download_patchers() -> Dictionary:
 	return Filesys.ensure_patchers_from_database().to_dict();
+
+func _thread_save_app_settings(steam_username: String, steam_password: String) -> Dictionary:
+	return Filesys.save_app_config({
+		"steam_username": steam_username,
+		"steam_password": steam_password,
+	}).to_dict()
 
 func _thread_delete_game(game_name: String) -> Dictionary:
 	return Filesys.delete_game(game_name).to_dict();

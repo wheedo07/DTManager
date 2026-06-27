@@ -1,6 +1,7 @@
 extends Node
 
 const CONFIG_NAME := "config.dm";
+const APP_CONFIG_NAME := "app_config.dm";
 const MOD_METADATA_NAME := "mod.dm.json";
 const THUMBNAIL_NAME := "thumbnail.dm.png";
 const TEMP_PREFIX := "__tmp__";
@@ -16,7 +17,7 @@ var RunPath: String
 var PatcherPath: String
 var VersionPath: String
 var RuntimeStatePath: String
-var DatabasePath: String
+var AppConfigPath: String
 
 func _init() -> void:
 	var base_dir := get_root_path()
@@ -25,13 +26,12 @@ func _init() -> void:
 	RunPath = base_dir.path_join("Run")
 	PatcherPath = base_dir.path_join("Patcher")
 	VersionPath = base_dir.path_join("GameVersions")
-	DatabasePath = get_database_root_path()
 	RuntimeStatePath = base_dir.path_join(RUNTIME_STATE_NAME)
+	AppConfigPath = base_dir.path_join(APP_CONFIG_NAME)
 	_ensure_directory(GamePath)
 	_ensure_directory(ModPath)
 	_ensure_directory(RunPath)
 	_ensure_directory(VersionPath)
-	_ensure_directory(DatabasePath)
 
 func get_game_thumbnail_path(g_name: String) -> String:
 	return GamePath.path_join(g_name).path_join(THUMBNAIL_NAME);
@@ -43,11 +43,6 @@ func get_root_path() -> String:
 	if(OS.has_feature("editor")):
 		return ProjectSettings.globalize_path("res://../output")
 	return OS.get_executable_path().get_base_dir()
-
-func get_database_root_path() -> String:
-	if(OS.has_feature("editor")):
-		return ProjectSettings.globalize_path("res://../database")
-	return get_root_path().path_join("database")
 
 func addGame(path: String, g_name: String) -> Util.Stats:
 	if(g_name.strip_edges().is_empty()):
@@ -196,48 +191,25 @@ func save_game_config(g_name: String, config: Dictionary) -> Util.Stats:
 func detect_steam_install(path: String) -> Dictionary:
 	return _detect_steam_install(path)
 
+func load_app_config() -> Util.Stats:
+	if(!FileAccess.file_exists(AppConfigPath)):
+		return Util.Stats.new(true, tr("status.ok"), {})
+	return _read_json(AppConfigPath)
+
+func save_app_config(config: Dictionary) -> Util.Stats:
+	return _write_json(AppConfigPath, config)
+
 func load_mod_config(g_name: String, m_name: String) -> Util.Stats:
 	return _read_json(_mod_dir(g_name, m_name).path_join(CONFIG_NAME))
 
 func sync_database_from_repository() -> Util.Stats:
-	var tree_url := "https://api.github.com/repos/%s/%s/git/trees/%s?recursive=1" % [DATABASE_REPO_OWNER, DATABASE_REPO_NAME, DATABASE_REPO_BRANCH]
-	var tree_result := _request_json_from_url(tree_url, PackedStringArray(["User-Agent: DTManager"]))
-	if(!bool(tree_result.get("ok", false))):
-		return Util.Stats.new(false, str(tree_result.get("message", tr("error.database_sync_failed"))))
-
-	var tree_data = tree_result.get("data", {})
-	if(typeof(tree_data) != TYPE_DICTIONARY):
-		return Util.Stats.new(false, tr("error.database_tree_invalid"))
-
-	var entries = tree_data.get("tree", [])
-	if(typeof(entries) != TYPE_ARRAY):
-		return Util.Stats.new(false, tr("error.database_tree_invalid"))
-
-	for entry in entries:
-		if(typeof(entry) != TYPE_DICTIONARY):
-			continue
-		if(str(entry.get("type", "")) != "blob"):
-			continue
-		var path := str(entry.get("path", ""))
-		if(!path.begins_with("database/")):
-			continue
-		var relative_path := path.trim_prefix("database/")
-		if(relative_path.is_empty()):
-			continue
-		var raw_url := "https://raw.githubusercontent.com/%s/%s/%s/%s" % [DATABASE_REPO_OWNER, DATABASE_REPO_NAME, DATABASE_REPO_BRANCH, path]
-		var download_result := _download_url_to_file(raw_url, DatabasePath.path_join(relative_path))
-		if(!download_result.ok):
-			return download_result
-
+	var patcher_result := _load_remote_database_json("Patcher.json")
+	if(!patcher_result.ok):
+		return patcher_result
 	return Util.Stats.new(true, tr("status.database_synced"))
 
 func ensure_patchers_from_database() -> Util.Stats:
-	if(!FileAccess.file_exists(DatabasePath.path_join("Patcher.json"))):
-		var sync_result := sync_database_from_repository()
-		if(!sync_result.ok):
-			return sync_result
-
-	var config_result := _read_json(DatabasePath.path_join("Patcher.json"))
+	var config_result := _load_remote_database_json("Patcher.json")
 	if(!config_result.ok):
 		return config_result
 
@@ -280,20 +252,20 @@ func download_database_manifest(app_id: String, manifest_id: String, destination
 	for depot_entry in manifest_result.data.get("depots", []):
 		if(typeof(depot_entry) != TYPE_DICTIONARY):
 			continue
-		var depot_id := str(depot_entry.get("depot_id", ""))
-		var depot_manifest_id := str(depot_entry.get("manifest_id", ""))
+		var depot_id := _json_number_to_string(depot_entry.get("depot_id", ""))
+		var depot_manifest_id := _json_number_to_string(depot_entry.get("manifest_id", ""))
 		if(depot_id.is_empty() || depot_manifest_id.is_empty()):
 			continue
-		var args := PackedStringArray([
+		var args := [
 			"-app", app_id,
 			"-depot", depot_id,
 			"-manifest", depot_manifest_id,
 			"-dir", destination_dir,
-		])
+		];
 		if(!username.is_empty()):
-			args.append_array(PackedStringArray(["-username", username]))
+			args.append_array(["-username", username])
 		if(!password.is_empty()):
-			args.append_array(PackedStringArray(["-password", password]))
+			args.append_array(["-password", password])
 		var output: Array = []
 		var exit_code := OS.execute(depot_downloader_path, args, output, true, false)
 		if(exit_code != 0):
@@ -302,10 +274,10 @@ func download_database_manifest(app_id: String, manifest_id: String, destination
 	return Util.Stats.new(true, tr("status.depot_download_complete"))
 
 func load_database_game(app_id: String) -> Util.Stats:
-	return _read_json(DatabasePath.path_join(app_id).path_join("game.json"))
+	return _load_remote_database_json("%s/game.json" % app_id)
 
 func load_database_manifest(app_id: String, manifest_id: String) -> Util.Stats:
-	return _read_json(DatabasePath.path_join(app_id).path_join("manifests").path_join(manifest_id + ".json"))
+	return _load_remote_database_json("%s/manifests/%s.json" % [app_id, manifest_id])
 
 func get_manifest_cache_dir(app_id: String, manifest_id: String) -> String:
 	return VersionPath.path_join(app_id).path_join(manifest_id)
@@ -626,7 +598,7 @@ func _build_gddelta_mod(g_name: String, base_dir: String, extract_dir: String, p
 			_delete_directory_if_exists(mod_dir)
 
 		var output: Array = []
-		var exit_code := OS.execute(gddelta_path, PackedStringArray(["apply", current_executable, patch_file, output_dir]), output, true, false)
+		var exit_code := OS.execute(gddelta_path, ["apply", current_executable, patch_file, output_dir], output, true, false)
 		if(exit_code != 0):
 			for stage_path in stage_paths:
 				_delete_directory_if_exists(stage_path)
@@ -651,7 +623,7 @@ func _apply_single_xdelta(patch_file: String, source_file: String, output_file: 
 		return Util.Stats.new(false, tr("error.xdelta_executable_not_found"))
 
 	var output: Array = []
-	var exit_code := OS.execute(xdelta_path, PackedStringArray(["-d", "-s", source_file, patch_file, output_file]), output, true, false)
+	var exit_code := OS.execute(xdelta_path, ["-d", "-s", source_file, patch_file, output_file], output, true, false)
 	if(exit_code != 0):
 		return Util.Stats.new(false, tr("error.xdelta_apply_failed") % ["\n".join(output)])
 	return Util.Stats.new(true, tr("status.ok"))
@@ -739,6 +711,8 @@ func _ensure_directory(path: String) -> void:
 		DirAccess.make_dir_recursive_absolute(path)
 
 func _delete_directory_if_exists(path: String) -> void:
+	if(!_is_safe_directory_target(path)):
+		return
 	if(!DirAccess.dir_exists_absolute(path)): return;
 	for file_name in DirAccess.get_files_at(path):
 		DirAccess.remove_absolute(path.path_join(file_name))
@@ -748,6 +722,8 @@ func _delete_directory_if_exists(path: String) -> void:
 
 
 func _delete_directory_contents(path: String) -> void:
+	if(!_is_safe_directory_target(path)):
+		return
 	if(!DirAccess.dir_exists_absolute(path)): return;
 	for file_name in DirAccess.get_files_at(path):
 		DirAccess.remove_absolute(path.path_join(file_name))
@@ -782,28 +758,19 @@ func _read_package_metadata(extract_dir: String) -> Dictionary:
 	return metadata_result.data
 
 func _resolve_depot_downloader_path() -> String:
-	for candidate in [
-		PatcherPath.path_join("DepotDownloader").path_join("DepotDownloader.exe"),
-		PatcherPath.path_join("DepotDownloader.exe"),
-		PatcherPath.path_join("DepotDownloader").path_join("DepotDownloader"),
-		PatcherPath.path_join("DepotDownloader"),
-	]:
-		if(FileAccess.file_exists(candidate)):
-			return candidate
-	return ""
+	var path := PatcherPath.path_join("DepotDownloader").path_join("DepotDownloader.exe");
+	if(FileAccess.file_exists(path)): return path;
+	return "";
 
 func _resolve_xdelta_path() -> String:
-	for candidate in [PatcherPath.path_join("xdelta.exe"), PatcherPath.path_join("xdelta")]:
-		if(FileAccess.file_exists(candidate)):
-			return candidate
-	return ""
-
+	var path := PatcherPath.path_join("xdelta.exe");
+	if(FileAccess.file_exists(path)): return path;
+	return "";
 
 func _resolve_gddelta_path() -> String:
-	for candidate in [PatcherPath.path_join("GodotDelta").path_join("gddelta.exe"), PatcherPath.path_join("GodotDelta").path_join("gddelta")]:
-		if(FileAccess.file_exists(candidate)):
-			return candidate
-	return ""
+	var path := PatcherPath.path_join("GodotDelta").path_join("gddelta.exe");
+	if(FileAccess.file_exists(path)): return path;
+	return "";
 
 func _is_patcher_installed(patcher_name: String) -> bool:
 	match patcher_name.to_lower():
@@ -817,7 +784,9 @@ func _is_patcher_installed(patcher_name: String) -> bool:
 func _install_patcher_archive(patcher_name: String, url: String) -> Util.Stats:
 	var archive_path := _temp_dir("patcher_" + patcher_name.to_lower() + ".zip")
 	var extract_dir := _temp_dir("patcher_" + patcher_name.to_lower())
+	var install_dir := _patcher_install_dir(patcher_name)
 	_delete_directory_if_exists(extract_dir)
+	_delete_directory_if_exists(install_dir)
 	if(FileAccess.file_exists(archive_path)):
 		DirAccess.remove_absolute(archive_path)
 
@@ -830,7 +799,8 @@ func _install_patcher_archive(patcher_name: String, url: String) -> Util.Stats:
 		DirAccess.remove_absolute(archive_path)
 		return extract_result
 
-	var merge_result := merge_directory(extract_dir, PatcherPath)
+	var source_dir := _resolve_extracted_root(extract_dir)
+	var merge_result := merge_directory(source_dir, install_dir)
 	DirAccess.remove_absolute(archive_path)
 	_delete_directory_if_exists(extract_dir)
 	if(!merge_result.ok):
@@ -846,7 +816,12 @@ func _resolve_metadata_base_dir(game_name: String, metadata: Dictionary, fallbac
 
 	var cache_dir := get_manifest_cache_dir(app_id, manifest_id)
 	if(!_directory_has_entries(cache_dir)):
-		var download_result := download_database_manifest(app_id, manifest_id, cache_dir)
+		var app_config_result := load_app_config()
+		if(!app_config_result.ok):
+			return app_config_result
+		var steam_username := str(app_config_result.data.get("steam_username", "")).strip_edges()
+		var steam_password := str(app_config_result.data.get("steam_password", ""))
+		var download_result := download_database_manifest(app_id, manifest_id, cache_dir, steam_username, steam_password)
 		if(!download_result.ok):
 			return download_result
 	if(!_directory_has_entries(cache_dir)):
@@ -854,7 +829,7 @@ func _resolve_metadata_base_dir(game_name: String, metadata: Dictionary, fallbac
 	return Util.Stats.new(true, tr("status.ok"), {"base_dir": cache_dir})
 
 func _download_url_to_file(url: String, output_path: String) -> Util.Stats:
-	var request_result := _request_url(url, PackedStringArray(["User-Agent: DTManager"]))
+	var request_result := _request_url(url, ["User-Agent: DTManager"])
 	if(!bool(request_result.get("ok", false))):
 		return Util.Stats.new(false, str(request_result.get("message", tr("error.failed_to_download_file"))))
 	_ensure_directory(output_path.get_base_dir())
@@ -864,16 +839,30 @@ func _download_url_to_file(url: String, output_path: String) -> Util.Stats:
 	file.store_buffer(request_result.get("body", PackedByteArray()))
 	return Util.Stats.new(true, tr("status.ok"))
 
-func _request_json_from_url(url: String, headers: PackedStringArray = PackedStringArray()) -> Dictionary:
+func _request_json_from_url(url: String, headers: PackedStringArray = []) -> Dictionary:
 	var request_result := _request_url(url, headers)
 	if(!bool(request_result.get("ok", false))):
 		return request_result
-	var parsed = JSON.parse_string(PackedByteArray(request_result.get("body", PackedByteArray())).get_string_from_utf8())
+	var parsed = JSON.parse_string(PackedByteArray(request_result.get("body", [])).get_string_from_utf8());
 	if(parsed == null):
 		return {"ok": false, "message": tr("error.failed_to_parse_remote_json")}
 	return {"ok": true, "data": parsed}
 
-func _request_url(url: String, headers: PackedStringArray = PackedStringArray(), redirect_count: int = 0) -> Dictionary:
+func _load_remote_database_json(relative_path: String) -> Util.Stats:
+	var url := "https://raw.githubusercontent.com/%s/%s/%s/database/%s" % [
+		DATABASE_REPO_OWNER,
+		DATABASE_REPO_NAME,
+		DATABASE_REPO_BRANCH,
+		relative_path,
+	]
+	var result := _request_json_from_url(url, ["User-Agent: DTManager"])
+	if(!bool(result.get("ok", false))):
+		return Util.Stats.new(false, str(result.get("message", tr("error.database_sync_failed"))))
+	if(typeof(result.get("data", null)) != TYPE_DICTIONARY):
+		return Util.Stats.new(false, tr("error.database_tree_invalid"))
+	return Util.Stats.new(true, tr("status.ok"), result.get("data", {}))
+
+func _request_url(url: String, headers: PackedStringArray = [], redirect_count: int = 0) -> Dictionary:
 	if(redirect_count > 5):
 		return {"ok": false, "message": tr("error.http_request_failed")}
 
@@ -927,6 +916,15 @@ func _directory_has_entries(path: String) -> bool:
 		return false
 	return !DirAccess.get_files_at(path).is_empty() || !DirAccess.get_directories_at(path).is_empty()
 
+func _is_safe_directory_target(path: String) -> bool:
+	var normalized := path.replace("\\", "/").trim_suffix("/")
+	if(normalized.is_empty() || normalized == "." || normalized == "/"):
+		return false
+	var drive_root_regex := RegEx.new()
+	if(drive_root_regex.compile("^[A-Za-z]:$") == OK && drive_root_regex.search(normalized) != null):
+		return false
+	return true
+
 func _database_game_has_manifest(game_data: Dictionary, manifest_id: String) -> bool:
 	var manifests = game_data.get("manifests", [])
 	if(typeof(manifests) != TYPE_ARRAY):
@@ -937,6 +935,31 @@ func _database_game_has_manifest(game_data: Dictionary, manifest_id: String) -> 
 		if(str(entry.get("manifest_id", "")) == manifest_id):
 			return true
 	return false
+
+func _json_number_to_string(value) -> String:
+	match typeof(value):
+		TYPE_FLOAT:
+			return str(int(value))
+		TYPE_INT:
+			return str(value)
+		_:
+			return str(value).strip_edges()
+
+func _patcher_install_dir(patcher_name: String) -> String:
+	match patcher_name.to_lower():
+		"godotdelta":
+			return PatcherPath.path_join("GodotDelta")
+		"depotdownloader":
+			return PatcherPath.path_join("DepotDownloader")
+		_:
+			return PatcherPath.path_join(patcher_name)
+
+func _resolve_extracted_root(extract_dir: String) -> String:
+	var directories := DirAccess.get_directories_at(extract_dir)
+	var files := DirAccess.get_files_at(extract_dir)
+	if(files.is_empty() && directories.size() == 1):
+		return extract_dir.path_join(directories[0])
+	return extract_dir
 
 func _parse_url(url: String) -> Dictionary:
 	var regex := RegEx.new()
@@ -980,7 +1003,7 @@ func _kill_process_by_name(executable_name: String) -> Util.Stats:
 	if(!OS.has_feature("windows")):
 		return Util.Stats.new(true, tr("status.ok"))
 	var output: Array = []
-	var exit_code := OS.execute("cmd", PackedStringArray(["/c", "taskkill", "/IM", executable_name, "/F"]), output, true, false)
+	var exit_code := OS.execute("cmd", ["/c", "taskkill", "/IM", executable_name, "/F"], output, true, false)
 	if(exit_code != 0):
 		var joined_output := "\n".join(output).to_lower()
 		if(joined_output.contains("not found") || joined_output.contains("no running instance")):
@@ -992,7 +1015,7 @@ func _is_process_running_by_name(executable_name: String) -> bool:
 	if(!OS.has_feature("windows")):
 		return false
 	var output: Array = []
-	var exit_code := OS.execute("cmd", PackedStringArray(["/c", "tasklist", "/FI", "IMAGENAME eq " + executable_name]), output, true, false)
+	var exit_code := OS.execute("cmd", ["/c", "tasklist", "/FI", "IMAGENAME eq " + executable_name], output, true, false)
 	if(exit_code != 0):
 		return false
 	return "\n".join(output).to_lower().contains(executable_name.to_lower())

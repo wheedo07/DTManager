@@ -1,13 +1,22 @@
 extends AcceptDialog
 
-signal settings_saved(name_value: String, steam_game_path: String, thumbnail_path: String, is_mod: bool)
+signal app_settings_saved(steam_username: String, steam_password: String)
+signal item_settings_saved(name_value: String, steam_game_path: String, thumbnail_path: String, is_mod: bool)
 signal maintenance_requested(action: String)
 
+@onready var app_tab_button: Button = %AppTabButton
+@onready var item_tab_button: Button = %ItemTabButton
+@onready var app_section: VBoxContainer = %AppSection
+@onready var item_section: VBoxContainer = %ItemSection
 @onready var game_name_edit: LineEdit = %GameNameEdit
 @onready var game_name_label: Label = %GameNameLabel
 @onready var steam_game_path_label: Label = %SteamGamePathLabel
 @onready var steam_game_path_row: HBoxContainer = %SteamGamePathRow
 @onready var steam_game_path_edit: LineEdit = %SteamGamePathEdit
+@onready var steam_username_label: Label = %SteamUsernameLabel
+@onready var steam_username_edit: LineEdit = %SteamUsernameEdit
+@onready var steam_password_label: Label = %SteamPasswordLabel
+@onready var steam_password_edit: LineEdit = %SteamPasswordEdit
 @onready var browse_button: Button = %BrowseButton
 @onready var folder_dialog: FileDialog = %SteamGamePathDialog
 @onready var thumbnail_browse_button: Button = %ThumbnailBrowseButton
@@ -17,8 +26,11 @@ signal maintenance_requested(action: String)
 
 var current_is_mod := false
 var selected_thumbnail_path := ""
+var has_item_settings := false
 
 func _ready() -> void:
+	app_tab_button.pressed.connect(func() -> void: _show_section(true))
+	item_tab_button.pressed.connect(func() -> void: _show_section(false))
 	browse_button.pressed.connect(_on_browse_pressed)
 	thumbnail_browse_button.pressed.connect(_on_thumbnail_browse_pressed)
 	sync_database_button.pressed.connect(func() -> void: maintenance_requested.emit("sync_database"))
@@ -27,19 +39,32 @@ func _ready() -> void:
 	folder_dialog.dir_selected.connect(_on_directory_selected)
 	thumbnail_dialog.file_selected.connect(_on_thumbnail_selected)
 
-func open_dialog(config: Dictionary, is_mod: bool = false) -> void:
+func open_dialog(app_config: Dictionary, item_config: Dictionary = {}, is_mod: bool = false) -> void:
 	current_is_mod = is_mod
-	title = "Mod Settings" if is_mod else "Game Settings"
+	has_item_settings = !item_config.is_empty()
+	title = "Settings"
 	game_name_label.text = "Mod Name" if is_mod else "Game Name"
-	game_name_edit.text = str(config.get("name", ""))
-	steam_game_path_edit.text = str(config.get("steam_game_path", ""))
+	game_name_edit.text = str(item_config.get("name", ""))
+	steam_game_path_edit.text = str(item_config.get("steam_game_path", ""))
+	steam_username_edit.text = str(app_config.get("steam_username", ""))
+	steam_password_edit.text = str(app_config.get("steam_password", ""))
 	selected_thumbnail_path = ""
-	steam_game_path_label.visible = !is_mod
-	steam_game_path_row.visible = !is_mod
-	sync_database_button.visible = !is_mod
-	download_patchers_button.visible = !is_mod
+	steam_game_path_label.visible = !is_mod && has_item_settings
+	steam_game_path_row.visible = !is_mod && has_item_settings
+	item_tab_button.visible = has_item_settings
+	item_tab_button.disabled = !has_item_settings
+	_show_section(!has_item_settings)
 	popup_centered()
-	game_name_edit.grab_focus()
+	if(app_section.visible):
+		steam_username_edit.grab_focus()
+	else:
+		game_name_edit.grab_focus()
+
+func _show_section(show_app: bool) -> void:
+	app_section.visible = show_app
+	item_section.visible = !show_app && has_item_settings
+	app_tab_button.disabled = show_app
+	item_tab_button.disabled = !has_item_settings || !show_app
 
 func _on_browse_pressed() -> void:
 	folder_dialog.popup_centered_ratio(0.8)
@@ -54,6 +79,9 @@ func _on_thumbnail_selected(path: String) -> void:
 	selected_thumbnail_path = path
 
 func _on_confirmed() -> void:
+	if(app_section.visible):
+		app_settings_saved.emit(steam_username_edit.text.strip_edges(), steam_password_edit.text)
+		return
 	var game_name := game_name_edit.text.strip_edges()
 	if(game_name.is_empty()):
 		Global.alert(tr("error.game_name_empty"))
@@ -61,4 +89,4 @@ func _on_confirmed() -> void:
 	var steam_game_path := ""
 	if(!current_is_mod):
 		steam_game_path = steam_game_path_edit.text.strip_edges()
-	settings_saved.emit(game_name, steam_game_path, selected_thumbnail_path.strip_edges(), current_is_mod)
+	item_settings_saved.emit(game_name, steam_game_path, selected_thumbnail_path.strip_edges(), current_is_mod)

@@ -7,9 +7,6 @@ const THUMBNAIL_NAME := "thumbnail.dm.png";
 const TEMP_PREFIX := "__tmp__";
 const RUNTIME_STATE_NAME := "runtime_state.dm";
 const RESTORE_DELAY_AFTER_KILL_MS := 1500;
-const DATABASE_REPO_OWNER := "wheedo07";
-const DATABASE_REPO_NAME := "DTManager";
-const DATABASE_REPO_BRANCH := "main";
 
 var GamePath: String
 var ModPath: String
@@ -192,9 +189,6 @@ func save_game_config(g_name: String, config: Dictionary) -> Util.Stats:
 		return Util.Stats.new(false, "error.game_does_not_exist")
 	return _write_json(game_dir.path_join(CONFIG_NAME), config)
 
-func detect_steam_install(path: String) -> Dictionary:
-	return Steam.detect_install(path)
-
 func load_app_config() -> Util.Stats:
 	if(!FileAccess.file_exists(AppConfigPath)):
 		return Util.Stats.new(true, "status.ok", {})
@@ -203,26 +197,8 @@ func load_app_config() -> Util.Stats:
 func save_app_config(config: Dictionary) -> Util.Stats:
 	return _write_json(AppConfigPath, config)
 
-func steam_login(username: String, password: String) -> Util.Stats:
-	return Steam.login(username, password)
-
 func load_mod_config(g_name: String, m_name: String) -> Util.Stats:
 	return _read_json(_mod_dir(g_name, m_name).path_join(CONFIG_NAME))
-
-func sync_database_from_repository() -> Util.Stats:
-	return Steam.check_database()
-
-func ensure_patchers_from_database() -> Util.Stats:
-	return Steam.ensure_patchers()
-
-func download_database_manifest(app_id: String, manifest_id: String, destination_dir: String, username: String = "", password: String = "") -> Util.Stats:
-	return Steam.download_database_manifest(app_id, manifest_id, destination_dir, username, password)
-
-func load_database_game(app_id: String) -> Util.Stats:
-	return Steam.load_database_game(app_id)
-
-func load_database_manifest(app_id: String, manifest_id: String) -> Util.Stats:
-	return Steam.load_database_manifest(app_id, manifest_id)
 
 func get_manifest_cache_dir(app_id: String, manifest_id: String) -> String:
 	return VersionPath.path_join(app_id).path_join(manifest_id)
@@ -705,11 +681,6 @@ func _read_package_metadata(extract_dir: String) -> Dictionary:
 		return {}
 	return metadata_result.data
 
-func _resolve_depot_downloader_path() -> String:
-	var path := PatcherPath.path_join("DepotDownloader").path_join("DepotDownloader.exe");
-	if(FileAccess.file_exists(path)): return path;
-	return "";
-
 func _resolve_xdelta_path() -> String:
 	var path := PatcherPath.path_join("xdelta.exe");
 	if(FileAccess.file_exists(path)): return path;
@@ -719,42 +690,6 @@ func resolve_gddelta_path() -> String:
 	var path := PatcherPath.path_join("GodotDelta").path_join("gddelta.exe");
 	if(FileAccess.file_exists(path)): return path;
 	return "";
-
-func _is_patcher_installed(patcher_name: String) -> bool:
-	match patcher_name.to_lower():
-		"godotdelta":
-			return !resolve_gddelta_path().is_empty()
-		"depotdownloader":
-			return !_resolve_depot_downloader_path().is_empty()
-		_:
-			return false
-
-func _install_patcher_archive(patcher_name: String, url: String) -> Util.Stats:
-	var archive_path := temp_dir("patcher_" + patcher_name.to_lower() + ".zip")
-	var extract_dir := temp_dir("patcher_" + patcher_name.to_lower())
-	var install_dir := _patcher_install_dir(patcher_name)
-	delete_directory_if_exists(extract_dir)
-	delete_directory_if_exists(install_dir)
-	if(FileAccess.file_exists(archive_path)):
-		DirAccess.remove_absolute(archive_path)
-
-	var download_result := _download_url_to_file(url, archive_path)
-	if(!download_result.ok):
-		return download_result
-
-	var extract_result := extract_zip(archive_path, extract_dir)
-	if(!extract_result.ok):
-		DirAccess.remove_absolute(archive_path)
-		return extract_result
-
-	var source_dir := _resolve_extracted_root(extract_dir)
-	var merge_result := merge_directory(source_dir, install_dir)
-	DirAccess.remove_absolute(archive_path)
-	delete_directory_if_exists(extract_dir)
-	if(!merge_result.ok):
-		return merge_result
-
-	return Util.Stats.new(true, "status.patchers_ready")
 
 func _resolve_metadata_base_dir(game_name: String, metadata: Dictionary, fallback_dir: String = "") -> Util.Stats:
 	var app_id := str(metadata.get("app_id", "")).strip_edges()
@@ -776,89 +711,6 @@ func _resolve_metadata_base_dir(game_name: String, metadata: Dictionary, fallbac
 		return Util.Stats.new(false, "error.manifest_cache_not_found")
 	return Util.Stats.new(true, "status.ok", {"base_dir": cache_dir})
 
-func _download_url_to_file(url: String, output_path: String) -> Util.Stats:
-	var request_result := _request_url(url, ["User-Agent: DTManager"])
-	if(!bool(request_result.get("ok", false))):
-		return Util.Stats.new(false, str(request_result.get("message", "error.failed_to_download_file")))
-	ensure_directory(output_path.get_base_dir())
-	var file := FileAccess.open(output_path, FileAccess.WRITE)
-	if(file == null):
-		return Util.Stats.new(false, "error.failed_to_write_extracted_file")
-	file.store_buffer(request_result.get("body", PackedByteArray()))
-	return Util.Stats.new(true, "status.ok")
-
-func _request_json_from_url(url: String, headers: PackedStringArray = []) -> Dictionary:
-	var request_result := _request_url(url, headers)
-	if(!bool(request_result.get("ok", false))):
-		return request_result
-	var parsed = JSON.parse_string(PackedByteArray(request_result.get("body", [])).get_string_from_utf8());
-	if(parsed == null):
-		return {"ok": false, "message": Util.trans("error.failed_to_parse_remote_json")}
-	return {"ok": true, "data": parsed}
-
-func _load_remote_database_json(relative_path: String) -> Util.Stats:
-	var url := "https://raw.githubusercontent.com/%s/%s/%s/database/%s" % [
-		DATABASE_REPO_OWNER,
-		DATABASE_REPO_NAME,
-		DATABASE_REPO_BRANCH,
-		relative_path,
-	]
-	var result := _request_json_from_url(url, ["User-Agent: DTManager"])
-	if(!bool(result.get("ok", false))):
-		return Util.Stats.new(false, str(result.get("message", "error.database_sync_failed")))
-	if(typeof(result.get("data", null)) != TYPE_DICTIONARY):
-		return Util.Stats.new(false, "error.database_tree_invalid")
-	return Util.Stats.new(true, "status.ok", result.get("data", {}))
-
-func _request_url(url: String, headers: PackedStringArray = [], redirect_count: int = 0) -> Dictionary:
-	if(redirect_count > 5):
-		return {"ok": false, "message": Util.trans("error.http_request_failed")}
-
-	var url_info := parse_url(url)
-	if(url_info.is_empty()):
-		return {"ok": false, "message": Util.trans("error.http_request_failed")}
-
-	var client := HTTPClient.new()
-	var tls_options = TLSOptions.client() if bool(url_info.get("https", false)) else null
-	var connect_error := client.connect_to_host(str(url_info.get("host", "")), int(url_info.get("port", 0)), tls_options)
-	if(connect_error != OK):
-		return {"ok": false, "message": Util.trans("error.http_request_failed")}
-
-	while client.get_status() == HTTPClient.STATUS_RESOLVING || client.get_status() == HTTPClient.STATUS_CONNECTING:
-		client.poll()
-	if(client.get_status() != HTTPClient.STATUS_CONNECTED):
-		return {"ok": false, "message": Util.trans("error.http_request_failed")}
-
-	var request_error := client.request(HTTPClient.METHOD_GET, str(url_info.get("path", "/")), headers)
-	if(request_error != OK):
-		return {"ok": false, "message": Util.trans("error.http_request_failed")}
-
-	while client.get_status() == HTTPClient.STATUS_REQUESTING:
-		client.poll()
-
-	if(client.get_status() != HTTPClient.STATUS_BODY && !client.has_response()):
-		return {"ok": false, "message": Util.trans("error.http_request_failed")}
-
-	var response_code := client.get_response_code()
-	var response_headers := client.get_response_headers_as_dictionary()
-	if(response_code >= 300 && response_code < 400):
-		var location := str(response_headers.get("Location", response_headers.get("location", "")))
-		if(location.is_empty()):
-			return {"ok": false, "message": Util.trans("error.http_request_failed")}
-		return _request_url(location, headers, redirect_count + 1)
-	if(response_code < 200 || response_code >= 300):
-		return {"ok": false, "message": Util.trans("error.http_request_failed")}
-
-	var body := PackedByteArray()
-	while client.get_status() == HTTPClient.STATUS_BODY:
-		client.poll()
-		var chunk := client.read_response_body_chunk()
-		if(chunk.is_empty()):
-			continue
-		body.append_array(chunk)
-
-	return {"ok": true, "body": body}
-
 func _directory_has_entries(path: String) -> bool:
 	if(!DirAccess.dir_exists_absolute(path)):
 		return false
@@ -872,42 +724,6 @@ func _is_safe_directory_target(path: String) -> bool:
 	if(drive_root_regex.compile("^[A-Za-z]:$") == OK && drive_root_regex.search(normalized) != null):
 		return false
 	return true
-
-func _database_game_has_manifest(game_data: Dictionary, manifest_id: String) -> bool:
-	var manifests = game_data.get("manifests", [])
-	if(typeof(manifests) != TYPE_ARRAY):
-		return false
-	for entry in manifests:
-		if(typeof(entry) != TYPE_DICTIONARY):
-			continue
-		if(str(entry.get("manifest_id", "")) == manifest_id):
-			return true
-	return false
-
-func _json_number_to_string(value) -> String:
-	match typeof(value):
-		TYPE_FLOAT:
-			return str(int(value))
-		TYPE_INT:
-			return str(value)
-		_:
-			return str(value).strip_edges()
-
-func _patcher_install_dir(patcher_name: String) -> String:
-	match patcher_name.to_lower():
-		"godotdelta":
-			return PatcherPath.path_join("GodotDelta")
-		"depotdownloader":
-			return PatcherPath.path_join("DepotDownloader")
-		_:
-			return PatcherPath.path_join(patcher_name)
-
-func _resolve_extracted_root(extract_dir: String) -> String:
-	var directories := DirAccess.get_directories_at(extract_dir)
-	var files := DirAccess.get_files_at(extract_dir)
-	if(files.is_empty() && directories.size() == 1):
-		return extract_dir.path_join(directories[0])
-	return extract_dir
 
 func parse_url(url: String) -> Dictionary:
 	var regex := RegEx.new()
@@ -963,50 +779,3 @@ func _is_process_running_by_name(executable_name: String) -> bool:
 	if(exit_code != 0):
 		return false
 	return "\n".join(output).to_lower().contains(executable_name.to_lower())
-
-func _detect_steam_install(source_dir: String) -> Dictionary:
-	var normalized_source := source_dir.replace("\\", "/").trim_suffix("/")
-	var source_parts := normalized_source.split("/")
-	var steamapps_index := source_parts.find("steamapps")
-	if(steamapps_index == -1):
-		return {}
-	if(steamapps_index + 1 >= source_parts.size() || source_parts[steamapps_index + 1] != "common"):
-		return {}
-
-	var steamapps_dir := "/".join(source_parts.slice(0, steamapps_index + 1))
-	var install_dir_name := source_dir.get_file()
-	for file_name in DirAccess.get_files_at(steamapps_dir):
-		if(!file_name.begins_with("appmanifest_") || !file_name.ends_with(".acf")):
-			continue
-		var app_id := file_name.trim_prefix("appmanifest_").trim_suffix(".acf")
-		if(app_id.is_empty()):
-			continue
-		var manifest_info := _read_steam_manifest(steamapps_dir.path_join(file_name))
-		if(manifest_info.is_empty()):
-			continue
-		if(str(manifest_info.get("installdir", "")) != install_dir_name):
-			continue
-		return {
-			"steam_uri": "steam://run/" + app_id,
-			"steam_game_path": source_dir,
-		}
-	return {}
-
-func _read_steam_manifest(path: String) -> Dictionary:
-	if(!FileAccess.file_exists(path)):
-		return {}
-	var file := FileAccess.open(path, FileAccess.READ)
-	if(file == null):
-		return {}
-	var result := {}
-	var regex := RegEx.new()
-	var compile_error := regex.compile('^\\s*"([^"]+)"\\s*"([^"]*)"\\s*$')
-	if(compile_error != OK):
-		return {}
-	while !file.eof_reached():
-		var line := file.get_line()
-		var match := regex.search(line)
-		if(match == null):
-			continue
-		result[match.get_string(1)] = match.get_string(2)
-	return result

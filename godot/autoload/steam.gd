@@ -105,7 +105,7 @@ func download_database_manifest(app_id: String, manifest_id: String, destination
 
 	Filesys.ensure_directory(destination_dir)
 	var depots = manifest_result.data.get("depots", [])
-	var depot_count := depots.size() if typeof(depots) == TYPE_ARRAY else 0
+	var depot_count = depots.size() if typeof(depots) == TYPE_ARRAY else 0;
 	var depot_index := 0
 	for depot_entry in manifest_result.data.get("depots", []):
 		if(typeof(depot_entry) != TYPE_DICTIONARY): continue;

@@ -1,0 +1,69 @@
+[gd_scene format=3 uid="uid://ddplem4cob052"]
+
+[ext_resource type="Theme" uid="uid://bl76nfqlr3omk" path="res://Themes/main_theme.tres" id="1_8i3ej"]
+[ext_resource type="Script" uid="uid://dxteak3vyqe0i" path="res://script/add_game_dialog.gd" id="1_script"]
+
+[node name="AddGameDialog" type="AcceptDialog" unique_id=460514845]
+oversampling_override = 1.0
+title = "Add Game"
+initial_position = 2
+size = Vector2i(620, 246)
+visible = true
+theme = ExtResource("1_8i3ej")
+script = ExtResource("1_script")
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=152130408]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 3.0
+offset_top = 3.0
+offset_right = -3.0
+offset_bottom = -56.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+
+[node name="Root" type="VBoxContainer" parent="Margin" unique_id=997021450]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="NameLabel" type="Label" parent="Margin/Root" unique_id=272847623]
+layout_mode = 2
+text = "Game Name"
+
+[node name="GameNameEdit" type="LineEdit" parent="Margin/Root" unique_id=1661812369]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "Game Name"
+
+[node name="ExeLabel" type="Label" parent="Margin/Root" unique_id=1639442690]
+layout_mode = 2
+text = "Executable Path"
+
+[node name="ExeRow" type="HBoxContainer" parent="Margin/Root" unique_id=1882982511]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="GameExeEdit" type="LineEdit" parent="Margin/Root/ExeRow" unique_id=1190483193]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "C:/Games/Game/Game.exe"
+
+[node name="BrowseButton" type="Button" parent="Margin/Root/ExeRow" unique_id=985843075]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Browse"
+
+[node name="GameExeDialog" type="FileDialog" parent="." unique_id=941161541]
+unique_name_in_owner = true
+oversampling_override = 1.0
+title = "Open a File"
+size = Vector2i(790, 360)
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.exe ; Game Executable")
+use_native_dialog = true

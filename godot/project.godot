@@ -1,0 +1,38 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="DT Manager"
+config/version="0.0.3"
+run/main_scene="res://main.tscn"
+config/features=PackedStringArray("4.7")
+boot_splash/show_image=false
+config/icon="uid://dengam76rnj77"
+
+[autoload]
+
+Global="*uid://7wovcjcl05ye"
+Filesys="*uid://jkhp32h0r6qp"
+
+[debug]
+
+gdscript/warnings/shadowed_variable_base_class=0
+
+[display]
+
+window/size/viewport_width=960
+window/size/viewport_height=580
+window/size/resizable=false
+window/size/maximize_disabled=true
+
+[internationalization]
+
+locale/translations=PackedStringArray("res://translation/translation.en.translation", "res://translation/translation.ko.translation")

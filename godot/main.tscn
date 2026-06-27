@@ -1,0 +1,380 @@
+[gd_scene format=3 uid="uid://crlxsk8qr5on3"]
+
+[ext_resource type="Theme" uid="uid://bl76nfqlr3omk" path="res://Themes/main_theme.tres" id="1_theme"]
+[ext_resource type="Script" uid="uid://83ssye8ugotm" path="res://script/main.gd" id="2_script"]
+[ext_resource type="FontFile" uid="uid://cs1i8ox1070q8" path="res://Themes/font/Mars_Needs_Cunnilingus.ttf" id="3_7mycd"]
+[ext_resource type="PackedScene" uid="uid://ddplem4cob052" path="res://scenes/add_game_dialog.tscn" id="3_dialog"]
+[ext_resource type="PackedScene" uid="uid://dneqadnovmkt4" path="res://scenes/add_mod_dialog.tscn" id="4_mod_dialog"]
+[ext_resource type="PackedScene" uid="uid://cgqidrddyrtqm" path="res://scenes/settings_dialog.tscn" id="5_settings_dialog"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_clear"]
+bg_color = Color(0, 0, 0, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_frame"]
+bg_color = Color(0, 0, 0, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(1, 1, 1, 1)
+
+[node name="Main" type="Control" unique_id=268608324]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_theme")
+script = ExtResource("2_script")
+
+[node name="Background" type="ColorRect" parent="." unique_id=1798354574]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=1932557469]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 14
+
+[node name="Root" type="VBoxContainer" parent="Margin" unique_id=200468105]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="GameBarLineTop" type="ColorRect" parent="Margin/Root" unique_id=492332983]
+custom_minimum_size = Vector2(0, 6)
+layout_mode = 2
+
+[node name="GameBar" type="HBoxContainer" parent="Margin/Root" unique_id=804908912]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="PrevGameButton" type="Button" parent="Margin/Root/GameBar" unique_id=1241932226]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxFlat_clear")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_clear")
+theme_override_styles/hover = SubResource("StyleBoxFlat_clear")
+theme_override_styles/focus = SubResource("StyleBoxFlat_clear")
+text = "<"
+
+[node name="GameFrame" type="PanelContainer" parent="Margin/Root/GameBar" unique_id=1764101483]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_frame")
+
+[node name="GameFrameMargin" type="MarginContainer" parent="Margin/Root/GameBar/GameFrame" unique_id=1656517885]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 10
+
+[node name="GameName" type="Label" parent="Margin/Root/GameBar/GameFrame/GameFrameMargin" unique_id=1647443856]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "UNDERTALE"
+horizontal_alignment = 1
+
+[node name="NextGameButton" type="Button" parent="Margin/Root/GameBar" unique_id=242119566]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+theme_override_styles/normal = SubResource("StyleBoxFlat_clear")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_clear")
+theme_override_styles/hover = SubResource("StyleBoxFlat_clear")
+theme_override_styles/focus = SubResource("StyleBoxFlat_clear")
+text = ">"
+
+[node name="GameBarLineBottom" type="ColorRect" parent="Margin/Root" unique_id=152350300]
+custom_minimum_size = Vector2(0, 6)
+layout_mode = 2
+
+[node name="Body" type="HBoxContainer" parent="Margin/Root" unique_id=1546783259]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 16
+
+[node name="Sidebar" type="PanelContainer" parent="Margin/Root/Body" unique_id=1968070579]
+custom_minimum_size = Vector2(160, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_frame")
+
+[node name="SidebarMargin" type="MarginContainer" parent="Margin/Root/Body/Sidebar" unique_id=108743273]
+layout_mode = 2
+theme_override_constants/margin_left = 14
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 14
+theme_override_constants/margin_bottom = 16
+
+[node name="SidebarRoot" type="VBoxContainer" parent="Margin/Root/Body/Sidebar/SidebarMargin" unique_id=35575710]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="AddModButton" type="Button" parent="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot" unique_id=940282299]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("StyleBoxFlat_clear")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_clear")
+theme_override_styles/hover = SubResource("StyleBoxFlat_clear")
+theme_override_styles/focus = SubResource("StyleBoxFlat_clear")
+text = "Add Mod"
+alignment = 0
+
+[node name="AddGameButton" type="Button" parent="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot" unique_id=136212104]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("StyleBoxFlat_clear")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_clear")
+theme_override_styles/hover = SubResource("StyleBoxFlat_clear")
+theme_override_styles/focus = SubResource("StyleBoxFlat_clear")
+text = "Add Game"
+alignment = 0
+
+[node name="RefreshButton" type="Button" parent="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot" unique_id=1623391980]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("StyleBoxFlat_clear")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_clear")
+theme_override_styles/hover = SubResource("StyleBoxFlat_clear")
+theme_override_styles/focus = SubResource("StyleBoxFlat_clear")
+text = "Refresh"
+alignment = 0
+
+[node name="SettingsButton" type="Button" parent="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot" unique_id=316310381]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 26
+theme_override_styles/normal = SubResource("StyleBoxFlat_clear")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_clear")
+theme_override_styles/hover = SubResource("StyleBoxFlat_clear")
+theme_override_styles/focus = SubResource("StyleBoxFlat_clear")
+text = "Settings"
+alignment = 0
+
+[node name="SidebarSpacer" type="Control" parent="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot" unique_id=1309663754]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VersionLabel" type="Label" parent="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot" unique_id=421553539]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.68, 0.68, 0.68, 1)
+theme_override_fonts/font = ExtResource("3_7mycd")
+theme_override_font_sizes/font_size = 22
+text = "v0.0.0"
+
+[node name="Content" type="HBoxContainer" parent="Margin/Root/Body" unique_id=1275994898]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 20
+
+[node name="ModsColumn" type="VBoxContainer" parent="Margin/Root/Body/Content" unique_id=782040880]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="ModsHeader" type="Label" parent="Margin/Root/Body/Content/ModsColumn" unique_id=7221041]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 23
+text = "Installed Mods"
+
+[node name="ModsScroll" type="ScrollContainer" parent="Margin/Root/Body/Content/ModsColumn" unique_id=1130507690]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="ModList" type="VBoxContainer" parent="Margin/Root/Body/Content/ModsColumn/ModsScroll" unique_id=906012210]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="DetailColumn" type="VBoxContainer" parent="Margin/Root/Body/Content" unique_id=1639650894]
+custom_minimum_size = Vector2(380, 0)
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="PreviewFrame" type="PanelContainer" parent="Margin/Root/Body/Content/DetailColumn" unique_id=533406164]
+custom_minimum_size = Vector2(0, 280)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_frame")
+
+[node name="PreviewMargin" type="MarginContainer" parent="Margin/Root/Body/Content/DetailColumn/PreviewFrame" unique_id=1147732472]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="PreviewCenter" type="MarginContainer" parent="Margin/Root/Body/Content/DetailColumn/PreviewFrame/PreviewMargin" unique_id=942787665]
+layout_mode = 2
+
+[node name="PreviewStack" type="VBoxContainer" parent="Margin/Root/Body/Content/DetailColumn/PreviewFrame/PreviewMargin/PreviewCenter" unique_id=1172289200]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="PreviewImage" type="TextureRect" parent="Margin/Root/Body/Content/DetailColumn/PreviewFrame/PreviewMargin/PreviewCenter/PreviewStack" unique_id=102219384]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+expand_mode = 1
+
+[node name="PreviewTitle" type="Label" parent="Margin/Root/Body/Content/DetailColumn/PreviewFrame/PreviewMargin/PreviewCenter/PreviewStack" unique_id=2033528938]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 34
+text = "UNDERTALE"
+horizontal_alignment = 1
+
+[node name="PreviewSubtitle" type="Label" parent="Margin/Root/Body/Content/DetailColumn/PreviewFrame/PreviewMargin/PreviewCenter/PreviewStack" unique_id=1345785759]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "No Splash Detected"
+horizontal_alignment = 1
+
+[node name="SelectedModName" type="Label" parent="Margin/Root/Body/Content/DetailColumn" unique_id=139392257]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 28
+text = "DebugMode"
+horizontal_alignment = 1
+
+[node name="ActionList" type="VBoxContainer" parent="Margin/Root/Body/Content/DetailColumn" unique_id=1451355467]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="PlayButton" type="Button" parent="Margin/Root/Body/Content/DetailColumn/ActionList" unique_id=355853663]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("StyleBoxFlat_clear")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_clear")
+theme_override_styles/hover = SubResource("StyleBoxFlat_clear")
+theme_override_styles/focus = SubResource("StyleBoxFlat_clear")
+text = "Play"
+alignment = 0
+
+[node name="OpenFolderButton" type="Button" parent="Margin/Root/Body/Content/DetailColumn/ActionList" unique_id=857634816]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("StyleBoxFlat_clear")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_clear")
+theme_override_styles/hover = SubResource("StyleBoxFlat_clear")
+theme_override_styles/focus = SubResource("StyleBoxFlat_clear")
+text = "Open Folder"
+alignment = 0
+
+[node name="DeleteButton" type="Button" parent="Margin/Root/Body/Content/DetailColumn/ActionList" unique_id=62792418]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("StyleBoxFlat_clear")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_clear")
+theme_override_styles/hover = SubResource("StyleBoxFlat_clear")
+theme_override_styles/focus = SubResource("StyleBoxFlat_clear")
+text = "Delete"
+alignment = 0
+
+[node name="AddGameDialog" parent="." unique_id=1701378520 instance=ExtResource("3_dialog")]
+unique_name_in_owner = true
+visible = false
+
+[node name="AddModDialog" parent="." unique_id=1521004064 instance=ExtResource("4_mod_dialog")]
+unique_name_in_owner = true
+visible = false
+
+[node name="GameSettingsDialog" parent="." unique_id=302064808 instance=ExtResource("5_settings_dialog")]
+unique_name_in_owner = true
+visible = false
+
+[node name="LoadingOverlay" type="Control" parent="." unique_id=198623450]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Shade" type="ColorRect" parent="LoadingOverlay" unique_id=835047346]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.72)
+
+[node name="Center" type="CenterContainer" parent="LoadingOverlay" unique_id=520767100]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="LoadingOverlay/Center" unique_id=2067824554]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_frame")
+
+[node name="PanelMargin" type="MarginContainer" parent="LoadingOverlay/Center/Panel" unique_id=1988660784]
+layout_mode = 2
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 20
+
+[node name="LoadingLabel" type="Label" parent="LoadingOverlay/Center/Panel/PanelMargin" unique_id=1840798356]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 28
+text = "Loading..."
+horizontal_alignment = 1
+
+[connection signal="pressed" from="Margin/Root/GameBar/PrevGameButton" to="." method="_on_prev_game_pressed"]
+[connection signal="pressed" from="Margin/Root/GameBar/NextGameButton" to="." method="_on_next_game_pressed"]
+[connection signal="pressed" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/AddModButton" to="." method="_on_add_mod_pressed"]
+[connection signal="pressed" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/AddGameButton" to="." method="_on_add_game_pressed"]
+[connection signal="pressed" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/RefreshButton" to="." method="_on_refresh_pressed"]
+[connection signal="pressed" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/SettingsButton" to="." method="_on_settings_pressed"]

@@ -1,0 +1,67 @@
+[gd_scene format=3 uid="uid://dneqadnovmkt4"]
+
+[ext_resource type="Theme" uid="uid://bl76nfqlr3omk" path="res://Themes/main_theme.tres" id="1_k4o05"]
+[ext_resource type="Script" uid="uid://tu1ccsibbwxc" path="res://script/add_mod_dialog.gd" id="1_script"]
+
+[node name="AddModDialog" type="AcceptDialog" unique_id=1854692549]
+oversampling_override = 1.0
+title = "Add Mod"
+initial_position = 2
+size = Vector2i(620, 280)
+visible = true
+theme = ExtResource("1_k4o05")
+script = ExtResource("1_script")
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=1575228260]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 3.0
+offset_top = 3.0
+offset_right = -3.0
+offset_bottom = -56.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+
+[node name="Root" type="VBoxContainer" parent="Margin" unique_id=763710867]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="NameLabel" type="Label" parent="Margin/Root" unique_id=764127949]
+layout_mode = 2
+text = "Mod Name"
+
+[node name="ModNameEdit" type="LineEdit" parent="Margin/Root" unique_id=681699079]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "DebugMode"
+
+[node name="SourceLabel" type="Label" parent="Margin/Root" unique_id=227503848]
+layout_mode = 2
+text = "Source Path"
+
+[node name="SourceRow" type="HBoxContainer" parent="Margin/Root" unique_id=716225029]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ModSourceEdit" type="LineEdit" parent="Margin/Root/SourceRow" unique_id=807925111]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "C:/Mods/mod.zip"
+
+[node name="BrowseButton" type="Button" parent="Margin/Root/SourceRow" unique_id=658214594]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Browse"
+
+[node name="ModSourceDialog" type="FileDialog" parent="." unique_id=2064682832]
+unique_name_in_owner = true
+title = "Open a File"
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.zip, *.pck ; Mod Package")
+use_native_dialog = true

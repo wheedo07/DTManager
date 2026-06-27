@@ -1,0 +1,67 @@
+[gd_scene format=3 uid="uid://dfpojndxu0rl7"]
+
+[ext_resource type="Theme" uid="uid://bl76nfqlr3omk" path="res://Themes/main_theme.tres" id="1_384m3"]
+[ext_resource type="Script" uid="uid://okmeynrbgilp" path="res://script/mod_row.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_clear"]
+bg_color = Color(0, 0, 0, 0)
+
+[node name="ModRow" type="Button" unique_id=290987164]
+custom_minimum_size = Vector2(298, 64)
+size_flags_horizontal = 3
+focus_mode = 0
+mouse_default_cursor_shape = 2
+theme = ExtResource("1_384m3")
+theme_override_styles/normal = SubResource("StyleBoxFlat_clear")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_clear")
+theme_override_styles/hover = SubResource("StyleBoxFlat_clear")
+theme_override_styles/focus = SubResource("StyleBoxFlat_clear")
+flat = true
+script = ExtResource("1_script")
+
+[node name="CardPanel" type="PanelContainer" parent="." unique_id=761543299]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Row" type="HBoxContainer" parent="CardPanel" unique_id=1123525110]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 12
+
+[node name="AccentBar" type="ColorRect" parent="CardPanel/Row" unique_id=395792821]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(8, 5)
+layout_mode = 2
+offset_transform_enabled = true
+offset_transform_position = Vector2(8, 0)
+mouse_filter = 2
+color = Color(0.24, 0.24, 0.24, 1)
+
+[node name="Content" type="VBoxContainer" parent="CardPanel/Row" unique_id=1070565750]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_constants/separation = 4
+
+[node name="NameLabel" type="Label" parent="CardPanel/Row/Content" unique_id=344296306]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 24
+text = "Mod Name"
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="StateLabel" type="Label" parent="CardPanel/Row/Content" unique_id=845670393]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.72, 0.72, 1)
+theme_override_font_sizes/font_size = 16
+text = "MOD"

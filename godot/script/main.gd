@@ -40,6 +40,7 @@ func _ready() -> void:
 	add_game_dialog.game_created.connect(_on_game_created)
 	add_mod_dialog.mod_created.connect(_on_mod_created)
 	game_settings_dialog.settings_saved.connect(_on_game_settings_saved)
+	game_settings_dialog.maintenance_requested.connect(_on_maintenance_requested)
 	loading_overlay.visible = false
 	if(!play_button.pressed.is_connected(func() -> void: _on_action_pressed("play"))):
 		play_button.pressed.connect(func() -> void: _on_action_pressed("play"))
@@ -232,6 +233,8 @@ func _handle_worker_result(result) -> void:
 						break;
 		"play":
 			pass;
+		"sync_database", "download_patchers":
+			pass;
 		_:
 			_refresh_all();
 
@@ -374,11 +377,27 @@ func _on_mod_created(mod_name: String, source_path: String) -> void:
 		base_mod_name = str(_selected_mod().get("name", ""))
 	_start_worker("add_mod", tr("status.building_mod_files"), Callable(self, "_thread_add_mod").bind(game_name, source_path, mod_name, base_mod_name), {"mod_name": mod_name})
 
+func _on_maintenance_requested(action: String) -> void:
+	if(loading_active): return;
+	match action:
+		"sync_database":
+			_start_worker("sync_database", "Syncing database...", Callable(self, "_thread_sync_database"))
+		"download_patchers":
+			_start_worker("download_patchers", "Downloading patchers...", Callable(self, "_thread_download_patchers"))
+		_:
+			Global.alert(tr("error.unknown_action"));
+
 func _thread_add_game(executable_path: String, game_name: String) -> Dictionary:
 	return Filesys.addGame(executable_path, game_name).to_dict();
 
 func _thread_add_mod(game_name: String, source_path: String, mod_name: String, base_mod_name: String) -> Dictionary:
 	return Filesys.addMod(game_name, source_path, mod_name, base_mod_name).to_dict();
+
+func _thread_sync_database() -> Dictionary:
+	return Filesys.sync_database_from_repository().to_dict();
+
+func _thread_download_patchers() -> Dictionary:
+	return Filesys.ensure_patchers_from_database().to_dict();
 
 func _thread_delete_game(game_name: String) -> Dictionary:
 	return Filesys.delete_game(game_name).to_dict();

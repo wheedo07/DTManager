@@ -13,7 +13,10 @@ func prepare_and_launch(game_name: String, mod_name: String) -> Util.Stats:
 	if(run_path.is_empty()):
 		return Util.Stats.new(false, tr("error.game_run_path_empty"))
 
-	var game_dir := Filesys.GamePath.path_join(game_name)
+	var base_dir_result := Filesys.resolve_game_base_dir(game_name, mod_name)
+	if(!base_dir_result.ok):
+		return base_dir_result
+	var game_dir := str(base_dir_result.data.get("base_dir", Filesys.GamePath.path_join(game_name)))
 	var run_dir := Filesys.RunPath
 	Filesys.clear_run_directory()
 
@@ -29,8 +32,7 @@ func prepare_and_launch(game_name: String, mod_name: String) -> Util.Stats:
 		if(build_result.ok):
 			build_result = Filesys.merge_directory_without_configs(mod_dir, run_dir)
 
-	if(!build_result.ok):
-		return build_result
+	if(!build_result.ok): return build_result;
 
 	var executable_path := run_dir.path_join(run_path)
 	if(!FileAccess.file_exists(executable_path)):

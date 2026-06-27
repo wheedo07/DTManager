@@ -74,6 +74,22 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "Select Image"
 
+[node name="MaintenanceRow" type="HBoxContainer" parent="Margin/Root" unique_id=200014991]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SyncDatabaseButton" type="Button" parent="Margin/Root/MaintenanceRow" unique_id=196550013]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Sync Database"
+
+[node name="DownloadPatchersButton" type="Button" parent="Margin/Root/MaintenanceRow" unique_id=1690456611]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Download Patchers"
+
 [node name="SteamGamePathDialog" type="FileDialog" parent="." unique_id=690993714]
 unique_name_in_owner = true
 oversampling_override = 1.0

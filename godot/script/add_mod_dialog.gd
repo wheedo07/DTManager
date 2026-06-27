@@ -19,6 +19,10 @@ func open_dialog(base_mod_name: String = "") -> void:
 	popup_centered()
 	mod_name_edit.grab_focus()
 
+func _notification(what: int) -> void:
+	if(what != NOTIFICATION_WM_WINDOW_FOCUS_OUT || !visible || mod_source_dialog.visible): return;
+	hide()
+
 func _on_browse_pressed() -> void:
 	mod_source_dialog.popup_centered_ratio(0.8)
 

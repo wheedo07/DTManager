@@ -61,6 +61,15 @@ func open_dialog(app_config: Dictionary, item_config: Dictionary = {}, is_mod: b
 	else:
 		game_name_edit.grab_focus()
 
+func _notification(what: int) -> void:
+	if(what != NOTIFICATION_WM_WINDOW_FOCUS_OUT):
+		return
+	if(!visible):
+		return
+	if(folder_dialog.visible || thumbnail_dialog.visible):
+		return
+	hide()
+
 func _on_browse_pressed() -> void:
 	folder_dialog.popup_centered_ratio(0.8)
 

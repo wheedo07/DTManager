@@ -18,6 +18,10 @@ func open_dialog() -> void:
 	popup_centered()
 	game_name_edit.grab_focus()
 
+func _notification(what: int) -> void:
+	if(what != NOTIFICATION_WM_WINDOW_FOCUS_OUT || !visible || game_exe_dialog.visible): return;
+	hide()
+
 func _on_browse_pressed() -> void:
 	game_exe_dialog.popup_centered_ratio(0.8)
 

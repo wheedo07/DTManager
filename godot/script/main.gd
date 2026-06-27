@@ -42,6 +42,7 @@ func _ready() -> void:
 	game_settings_dialog.app_settings_saved.connect(_on_app_settings_saved)
 	game_settings_dialog.item_settings_saved.connect(_on_item_settings_saved)
 	game_settings_dialog.maintenance_requested.connect(_on_maintenance_requested)
+	game_settings_dialog.steam_account_check_requested.connect(_on_steam_account_check_requested)
 	loading_overlay.visible = false
 	if(!play_button.pressed.is_connected(func() -> void: _on_action_pressed("play"))):
 		play_button.pressed.connect(func() -> void: _on_action_pressed("play"))
@@ -182,6 +183,10 @@ func _has_selected_mod() -> bool:
 
 func _set_loading(active: bool, message: String = "Loading...") -> void:
 	loading_active = active;
+	if(active):
+		add_game_dialog.hide()
+		add_mod_dialog.hide()
+		game_settings_dialog.hide()
 	loading_overlay.visible = active;
 	loading_label.text = message;
 
@@ -400,6 +405,10 @@ func _on_maintenance_requested(action: String) -> void:
 		_:
 			Global.alert(tr("error.unknown_action"));
 
+func _on_steam_account_check_requested(steam_username: String, steam_password: String) -> void:
+	if(loading_active): return;
+	_start_worker("check_steam_account", "Checking Steam account...", Callable(self, "_thread_check_steam_account").bind(steam_username, steam_password))
+
 func _thread_add_game(executable_path: String, game_name: String) -> Dictionary:
 	return Filesys.addGame(executable_path, game_name).to_dict();
 
@@ -411,6 +420,9 @@ func _thread_sync_database() -> Dictionary:
 
 func _thread_download_patchers() -> Dictionary:
 	return Filesys.ensure_patchers_from_database().to_dict();
+
+func _thread_check_steam_account(steam_username: String, steam_password: String) -> Dictionary:
+	return Filesys.check_steam_account(steam_username, steam_password).to_dict();
 
 func _thread_save_app_settings(steam_username: String, steam_password: String) -> Dictionary:
 	return Filesys.save_app_config({

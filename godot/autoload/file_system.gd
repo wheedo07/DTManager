@@ -199,6 +199,35 @@ func load_app_config() -> Util.Stats:
 func save_app_config(config: Dictionary) -> Util.Stats:
 	return _write_json(AppConfigPath, config)
 
+func check_steam_account(username: String, password: String) -> Util.Stats:
+	if(username.strip_edges().is_empty() || password.is_empty()):
+		return Util.Stats.new(false, tr("error.steam_credentials_not_set"))
+	var depot_downloader_path := _resolve_depot_downloader_path()
+	if(depot_downloader_path.is_empty()):
+		var patcher_result := ensure_patchers_from_database()
+		if(!patcher_result.ok):
+			return patcher_result
+		depot_downloader_path = _resolve_depot_downloader_path()
+	if(depot_downloader_path.is_empty()):
+		return Util.Stats.new(false, tr("error.depotdownloader_executable_not_found"))
+
+	var temp_dir := _temp_dir("steam_account_check")
+	_delete_directory_if_exists(temp_dir)
+	_ensure_directory(temp_dir)
+	var output: Array = []
+	var args := PackedStringArray([
+		"-app", "480",
+		"-username", username,
+		"-password", password,
+		"-manifest-only",
+		"-dir", temp_dir,
+	])
+	var exit_code := OS.execute(depot_downloader_path, args, output, true, false)
+	_delete_directory_if_exists(temp_dir)
+	if(exit_code != 0):
+		return Util.Stats.new(false, tr("error.steam_account_check_failed") % ["\n".join(output)])
+	return Util.Stats.new(true, tr("status.steam_account_connected"))
+
 func load_mod_config(g_name: String, m_name: String) -> Util.Stats:
 	return _read_json(_mod_dir(g_name, m_name).path_join(CONFIG_NAME))
 

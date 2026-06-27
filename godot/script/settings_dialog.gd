@@ -3,9 +3,9 @@ extends AcceptDialog
 signal app_settings_saved(steam_username: String, steam_password: String)
 signal item_settings_saved(name_value: String, steam_game_path: String, thumbnail_path: String, is_mod: bool)
 signal maintenance_requested(action: String)
+signal steam_account_check_requested(steam_username: String, steam_password: String)
 
-@onready var app_tab_button: Button = %AppTabButton
-@onready var item_tab_button: Button = %ItemTabButton
+@onready var tabs: TabContainer = %Tabs
 @onready var app_section: VBoxContainer = %AppSection
 @onready var item_section: VBoxContainer = %ItemSection
 @onready var game_name_edit: LineEdit = %GameNameEdit
@@ -17,6 +17,7 @@ signal maintenance_requested(action: String)
 @onready var steam_username_edit: LineEdit = %SteamUsernameEdit
 @onready var steam_password_label: Label = %SteamPasswordLabel
 @onready var steam_password_edit: LineEdit = %SteamPasswordEdit
+@onready var check_steam_account_button: Button = %CheckSteamAccountButton
 @onready var browse_button: Button = %BrowseButton
 @onready var folder_dialog: FileDialog = %SteamGamePathDialog
 @onready var thumbnail_browse_button: Button = %ThumbnailBrowseButton
@@ -29,10 +30,9 @@ var selected_thumbnail_path := ""
 var has_item_settings := false
 
 func _ready() -> void:
-	app_tab_button.pressed.connect(func() -> void: _show_section(true))
-	item_tab_button.pressed.connect(func() -> void: _show_section(false))
 	browse_button.pressed.connect(_on_browse_pressed)
 	thumbnail_browse_button.pressed.connect(_on_thumbnail_browse_pressed)
+	check_steam_account_button.pressed.connect(func() -> void: steam_account_check_requested.emit(steam_username_edit.text.strip_edges(), steam_password_edit.text))
 	sync_database_button.pressed.connect(func() -> void: maintenance_requested.emit("sync_database"))
 	download_patchers_button.pressed.connect(func() -> void: maintenance_requested.emit("download_patchers"))
 	confirmed.connect(_on_confirmed)
@@ -51,20 +51,15 @@ func open_dialog(app_config: Dictionary, item_config: Dictionary = {}, is_mod: b
 	selected_thumbnail_path = ""
 	steam_game_path_label.visible = !is_mod && has_item_settings
 	steam_game_path_row.visible = !is_mod && has_item_settings
-	item_tab_button.visible = has_item_settings
-	item_tab_button.disabled = !has_item_settings
-	_show_section(!has_item_settings)
+	tabs.set_tab_title(0, tr("ui.settings.app_tab"))
+	tabs.set_tab_title(1, tr("ui.settings.item_tab"))
+	tabs.set_tab_hidden(1, !has_item_settings)
+	tabs.current_tab = 0 if !has_item_settings else 1
 	popup_centered()
-	if(app_section.visible):
+	if(tabs.current_tab == 0):
 		steam_username_edit.grab_focus()
 	else:
 		game_name_edit.grab_focus()
-
-func _show_section(show_app: bool) -> void:
-	app_section.visible = show_app
-	item_section.visible = !show_app && has_item_settings
-	app_tab_button.disabled = show_app
-	item_tab_button.disabled = !has_item_settings || !show_app
 
 func _on_browse_pressed() -> void:
 	folder_dialog.popup_centered_ratio(0.8)
@@ -79,7 +74,7 @@ func _on_thumbnail_selected(path: String) -> void:
 	selected_thumbnail_path = path
 
 func _on_confirmed() -> void:
-	if(app_section.visible):
+	if(tabs.current_tab == 0):
 		app_settings_saved.emit(steam_username_edit.text.strip_edges(), steam_password_edit.text)
 		return
 	var game_name := game_name_edit.text.strip_edges()

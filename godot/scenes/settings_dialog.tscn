@@ -5,9 +5,9 @@
 
 [node name="GameSettingsDialog" type="AcceptDialog" unique_id=1600996954]
 oversampling_override = 1.0
-title = "Game Settings"
+title = "ui.settings.title"
 initial_position = 2
-size = Vector2i(620, 617)
+size = Vector2i(695, 410)
 visible = true
 theme = ExtResource("1_theme")
 script = ExtResource("2_script")
@@ -30,112 +30,115 @@ theme_override_constants/margin_right = 10
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="TabRow" type="HBoxContainer" parent="Margin/Root" unique_id=180001]
-layout_mode = 2
-theme_override_constants/separation = 8
-
-[node name="AppTabButton" type="Button" parent="Margin/Root/TabRow" unique_id=180002]
+[node name="Tabs" type="TabContainer" parent="Margin/Root" unique_id=180001]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_horizontal = 3
-text = "App Settings"
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 18
+current_tab = 0
+tab_0/title = "ui.settings.app_tab"
+tab_1/title = "ui.settings.item_tab"
 
-[node name="ItemTabButton" type="Button" parent="Margin/Root/TabRow" unique_id=180003]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-text = "Game Settings"
-
-[node name="AppSection" type="VBoxContainer" parent="Margin/Root" unique_id=180004]
+[node name="AppSection" type="VBoxContainer" parent="Margin/Root/Tabs" unique_id=180004]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 12
+metadata/_tab_name = "ui.settings.app_tab"
+metadata/_tab_index = 0
 
-[node name="SteamUsernameLabel" type="Label" parent="Margin/Root/AppSection" unique_id=164552991]
+[node name="SteamUsernameLabel" type="Label" parent="Margin/Root/Tabs/AppSection" unique_id=164552991]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Steam Username"
+text = "ui.settings.steam_username"
 
-[node name="SteamUsernameEdit" type="LineEdit" parent="Margin/Root/AppSection" unique_id=1266155023]
+[node name="SteamUsernameEdit" type="LineEdit" parent="Margin/Root/Tabs/AppSection" unique_id=1266155023]
 unique_name_in_owner = true
 layout_mode = 2
-placeholder_text = "Steam Account Name"
+placeholder_text = "ui.settings.steam_username_placeholder"
 
-[node name="SteamPasswordLabel" type="Label" parent="Margin/Root/AppSection" unique_id=1179917289]
+[node name="SteamPasswordLabel" type="Label" parent="Margin/Root/Tabs/AppSection" unique_id=1179917289]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Steam Password"
+text = "ui.settings.steam_password"
 
-[node name="SteamPasswordEdit" type="LineEdit" parent="Margin/Root/AppSection" unique_id=44291813]
+[node name="SteamPasswordEdit" type="LineEdit" parent="Margin/Root/Tabs/AppSection" unique_id=44291813]
 unique_name_in_owner = true
 layout_mode = 2
-placeholder_text = "Steam Password"
+placeholder_text = "ui.settings.steam_password_placeholder"
 secret = true
 
-[node name="MaintenanceRow" type="HBoxContainer" parent="Margin/Root/AppSection" unique_id=200014991]
+[node name="CheckSteamAccountButton" type="Button" parent="Margin/Root/Tabs/AppSection" unique_id=180006]
+unique_name_in_owner = true
+layout_mode = 2
+text = "ui.settings.check_steam_account"
+
+[node name="MaintenanceRow" type="HBoxContainer" parent="Margin/Root/Tabs/AppSection" unique_id=200014991]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="SyncDatabaseButton" type="Button" parent="Margin/Root/AppSection/MaintenanceRow" unique_id=196550013]
+[node name="SyncDatabaseButton" type="Button" parent="Margin/Root/Tabs/AppSection/MaintenanceRow" unique_id=196550013]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Sync Database"
+text = "ui.settings.check_database"
 
-[node name="DownloadPatchersButton" type="Button" parent="Margin/Root/AppSection/MaintenanceRow" unique_id=1690456611]
+[node name="DownloadPatchersButton" type="Button" parent="Margin/Root/Tabs/AppSection/MaintenanceRow" unique_id=1690456611]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-text = "Download Patchers"
+text = "ui.settings.download_patchers"
 
-[node name="ItemSection" type="VBoxContainer" parent="Margin/Root" unique_id=180005]
+[node name="ItemSection" type="VBoxContainer" parent="Margin/Root/Tabs" unique_id=180005]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 theme_override_constants/separation = 12
+metadata/_tab_name = "ui.settings.item_tab"
+metadata/_tab_index = 1
 
-[node name="GameNameLabel" type="Label" parent="Margin/Root/ItemSection" unique_id=885392951]
+[node name="GameNameLabel" type="Label" parent="Margin/Root/Tabs/ItemSection" unique_id=885392951]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Game Name"
+text = "ui.settings.game_name"
 
-[node name="GameNameEdit" type="LineEdit" parent="Margin/Root/ItemSection" unique_id=973789320]
+[node name="GameNameEdit" type="LineEdit" parent="Margin/Root/Tabs/ItemSection" unique_id=973789320]
 unique_name_in_owner = true
 layout_mode = 2
-placeholder_text = "Name"
+placeholder_text = "ui.settings.name_placeholder"
 
-[node name="SteamGamePathLabel" type="Label" parent="Margin/Root/ItemSection" unique_id=335391220]
+[node name="SteamGamePathLabel" type="Label" parent="Margin/Root/Tabs/ItemSection" unique_id=335391220]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Steam Game Folder"
+text = "ui.settings.steam_game_folder"
 
-[node name="SteamGamePathRow" type="HBoxContainer" parent="Margin/Root/ItemSection" unique_id=860292403]
+[node name="SteamGamePathRow" type="HBoxContainer" parent="Margin/Root/Tabs/ItemSection" unique_id=860292403]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="SteamGamePathEdit" type="LineEdit" parent="Margin/Root/ItemSection/SteamGamePathRow" unique_id=532745642]
+[node name="SteamGamePathEdit" type="LineEdit" parent="Margin/Root/Tabs/ItemSection/SteamGamePathRow" unique_id=532745642]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-placeholder_text = "C:/Program Files (x86)/Steam/steamapps/common/[Game]"
+placeholder_text = "ui.settings.steam_game_folder_placeholder"
 
-[node name="BrowseButton" type="Button" parent="Margin/Root/ItemSection/SteamGamePathRow" unique_id=1968481262]
+[node name="BrowseButton" type="Button" parent="Margin/Root/Tabs/ItemSection/SteamGamePathRow" unique_id=1968481262]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Browse"
+text = "ui.settings.browse"
 
-[node name="ThumbnailLabel" type="Label" parent="Margin/Root/ItemSection" unique_id=1874181893]
+[node name="ThumbnailLabel" type="Label" parent="Margin/Root/Tabs/ItemSection" unique_id=1874181893]
 layout_mode = 2
-text = "Thumbnail Image"
+text = "ui.settings.thumbnail_image"
 
-[node name="ThumbnailRow" type="HBoxContainer" parent="Margin/Root/ItemSection" unique_id=260413926]
+[node name="ThumbnailRow" type="HBoxContainer" parent="Margin/Root/Tabs/ItemSection" unique_id=260413926]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="ThumbnailBrowseButton" type="Button" parent="Margin/Root/ItemSection/ThumbnailRow" unique_id=1590599627]
+[node name="ThumbnailBrowseButton" type="Button" parent="Margin/Root/Tabs/ItemSection/ThumbnailRow" unique_id=1590599627]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Select Image"
+text = "ui.settings.select_image"
 
 [node name="SteamGamePathDialog" type="FileDialog" parent="." unique_id=690993714]
 unique_name_in_owner = true

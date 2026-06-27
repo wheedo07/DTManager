@@ -96,6 +96,7 @@ error.depotdownloader_executable_not_found,DepotDownloader executable was not fo
 error.depot_download_failed,"Depot download failed: %s","Depot 다운로드 실패: %s"
 error.steam_username_not_set,Steam username is not set.,스팀 아이디가 설정되지 않았습니다.
 error.steam_credentials_not_set,Steam username or password is not set.,스팀 아이디 또는 비밀번호가 설정되지 않았습니다.
+error.steam_login_required,Please log in to Steam first.,먼저 스팀 로그인해주세요.
 error.steam_login_failed,"Steam login failed: %s","스팀 로그인 실패: %s"
 error.steam_login_guard_required,"Steam login requires Steam Guard approval in the Steam Mobile App. After approving, try again.%s","스팀 로그인에는 Steam 모바일 앱 승인(Steam Guard)이 필요합니다. 승인한 뒤 다시 시도하세요.%s"
 error.depot_download_guard_required,"Depot download requires Steam Guard approval in the Steam Mobile App. After approving, try again.%s","Depot 다운로드에는 Steam 모바일 앱 승인(Steam Guard)이 필요합니다. 승인한 뒤 다시 시도하세요.%s"

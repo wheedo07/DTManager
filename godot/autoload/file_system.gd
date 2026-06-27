@@ -2,10 +2,10 @@ extends Node
 
 const CONFIG_NAME := "config.dm";
 const APP_CONFIG_NAME := "app_config.dm";
-const MOD_METADATA_NAME := "mod.dm.json";
+const MOD_METADATA_NAME := "DTManager.mod.json";
 const THUMBNAIL_NAME := "thumbnail.dm.png";
-const TEMP_PREFIX := "__tmp__";
 const RUNTIME_STATE_NAME := "runtime_state.dm";
+const TEMP_PREFIX := "__tmp__";
 const RESTORE_DELAY_AFTER_KILL_MS := 1500;
 
 var GamePath: String
@@ -704,6 +704,8 @@ func _resolve_metadata_base_dir(game_name: String, metadata: Dictionary, fallbac
 			return app_config_result
 		var steam_username := str(app_config_result.data.get("steam_username", "")).strip_edges()
 		var steam_password := str(app_config_result.data.get("steam_password", ""))
+		if(steam_username.is_empty() || steam_password.is_empty()):
+			return Util.Stats.new(false, "error.steam_login_required")
 		var download_result := Steam.download_database_manifest(app_id, manifest_id, cache_dir, steam_username, steam_password)
 		if(!download_result.ok):
 			return download_result

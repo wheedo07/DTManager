@@ -32,12 +32,10 @@ func login(username: String, password: String) -> Util.Stats:
 	if(password.is_empty()):
 		return Util.Stats.new(false, "error.steam_credentials_not_set")
 	Util.set_loading_status("Checking patcher tools...")
+	var depot_downloader_result := _ensure_depot_downloader()
+	if(!depot_downloader_result.ok):
+		return depot_downloader_result
 	var depot_downloader_path := _resolve_depot_downloader_path()
-	if(depot_downloader_path.is_empty()):
-		var patcher_result := ensure_patchers()
-		if(!patcher_result.ok):
-			return patcher_result
-		depot_downloader_path = _resolve_depot_downloader_path()
 	if(depot_downloader_path.is_empty()):
 		return Util.Stats.new(false, "error.depotdownloader_executable_not_found")
 
@@ -84,12 +82,10 @@ func ensure_patchers() -> Util.Stats:
 
 func download_database_manifest(app_id: String, manifest_id: String, destination_dir: String, username: String = "", password: String = "") -> Util.Stats:
 	Util.set_loading_status("Checking patcher tools...")
+	var depot_downloader_result := _ensure_depot_downloader()
+	if(!depot_downloader_result.ok):
+		return depot_downloader_result
 	var depot_downloader_path := _resolve_depot_downloader_path()
-	if(depot_downloader_path.is_empty()):
-		var patcher_result := ensure_patchers()
-		if(!patcher_result.ok):
-			return patcher_result
-		depot_downloader_path = _resolve_depot_downloader_path()
 	if(depot_downloader_path.is_empty()):
 		return Util.Stats.new(false, "error.depotdownloader_executable_not_found")
 
@@ -142,6 +138,18 @@ func _resolve_depot_downloader_path() -> String:
 	if(FileAccess.file_exists(path)):
 		return path
 	return ""
+
+func _ensure_depot_downloader() -> Util.Stats:
+	if(!_resolve_depot_downloader_path().is_empty()):
+		return Util.Stats.new(true, "status.ok")
+	var config_result := _load_remote_database_json("Patcher.json")
+	if(!config_result.ok):
+		return config_result
+	var url := str(config_result.data.get("DepotDownloader", ""))
+	if(url.is_empty()):
+		return Util.Stats.new(false, "error.depotdownloader_executable_not_found")
+	Util.set_loading_status("Downloading patcher: DepotDownloader")
+	return _install_patcher_archive("DepotDownloader", url)
 
 func _is_patcher_installed(patcher_name: String) -> bool:
 	match patcher_name.to_lower():

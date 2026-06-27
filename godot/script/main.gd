@@ -427,6 +427,12 @@ func _thread_download_patchers() -> Dictionary:
 	return Steam.ensure_patchers().to_dict();
 
 func _thread_steam_login(steam_username: String, steam_password: String) -> Dictionary:
+	var save_result := Filesys.save_app_config({
+		"steam_username": steam_username,
+		"steam_password": steam_password,
+	})
+	if(!save_result.ok):
+		return save_result.to_dict()
 	return Steam.login(steam_username, steam_password).to_dict();
 
 func _thread_save_app_settings(steam_username: String, steam_password: String) -> Dictionary:

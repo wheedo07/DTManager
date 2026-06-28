@@ -93,14 +93,24 @@ func addMod(g_name: String, path: String, m_name: String, base_mod_name: String 
 
 	var patch_base_dir := game_dir
 	var patch_base_temp_dir := ""
+	var reference_base_dir := game_dir
+	var inherited_metadata := {}
 	if(!base_mod_name.strip_edges().is_empty()):
 		Util.set_loading_status("Preparing base mod files...")
 		var base_mod_dir := _mod_dir(g_name, base_mod_name)
 		if(!DirAccess.dir_exists_absolute(base_mod_dir)):
 			return Util.Stats.new(false, "error.mod_does_not_exist")
+		var base_mod_config_result := load_mod_config(g_name, base_mod_name)
+		if(!base_mod_config_result.ok):
+			return base_mod_config_result
+		inherited_metadata = base_mod_config_result.data.duplicate()
+		var reference_base_result := _resolve_metadata_base_dir(g_name, inherited_metadata, game_dir)
+		if(!reference_base_result.ok):
+			return reference_base_result
+		reference_base_dir = str(reference_base_result.data.get("base_dir", game_dir))
 		patch_base_temp_dir = temp_dir("mod_base_" + g_name + "_" + m_name)
 		delete_directory_if_exists(patch_base_temp_dir)
-		var base_copy_result := copy_directory(game_dir, patch_base_temp_dir)
+		var base_copy_result := copy_directory(reference_base_dir, patch_base_temp_dir)
 		if(!base_copy_result.ok):
 			return base_copy_result
 		var base_merge_result := merge_directory_without_configs(base_mod_dir, patch_base_temp_dir)
@@ -118,39 +128,61 @@ func addMod(g_name: String, path: String, m_name: String, base_mod_name: String 
 		return extract_result
 
 	var package_metadata := _read_package_metadata(extract_dir)
-	var metadata_base_dir := _resolve_metadata_base_dir(g_name, package_metadata)
-	if(!metadata_base_dir.ok):
-		delete_directory_if_exists(extract_dir)
-		delete_directory_if_exists(patch_base_temp_dir)
-		return metadata_base_dir
-	if(!str(metadata_base_dir.data.get("base_dir", "")).is_empty()):
-		patch_base_dir = str(metadata_base_dir.data.get("base_dir", ""))
+	var effective_metadata := inherited_metadata.duplicate()
+	for key in ["app_id", "manifest_id", "branch"]:
+		if(package_metadata.has(key)):
+			effective_metadata[key] = package_metadata[key]
+	if(base_mod_name.strip_edges().is_empty()):
+		var metadata_base_dir := _resolve_metadata_base_dir(g_name, package_metadata)
+		if(!metadata_base_dir.ok):
+			delete_directory_if_exists(extract_dir)
+			delete_directory_if_exists(patch_base_temp_dir)
+			return metadata_base_dir
+		if(!str(metadata_base_dir.data.get("base_dir", "")).is_empty()):
+			patch_base_dir = str(metadata_base_dir.data.get("base_dir", ""))
+			reference_base_dir = patch_base_dir
 
 	var xdelta_files := collect_files_with_extension(extract_dir, ".xdelta")
 	var pck_files := collect_files_with_extension(extract_dir, ".pck")
 	var build_result := Util.Stats.new(false, "error.unknown")
+	var patch_output_dir := mod_dir if base_mod_name.strip_edges().is_empty() else temp_dir("mod_build_" + g_name + "_" + m_name)
+	if(base_mod_name.strip_edges().is_empty() == false):
+		delete_directory_if_exists(patch_output_dir)
 
 	if(!xdelta_files.is_empty()):
 		Util.set_loading_status("Applying xdelta patches...")
-		build_result = _build_xdelta_mod(patch_base_dir, extract_dir, xdelta_files, mod_dir)
+		build_result = _build_xdelta_mod(patch_base_dir, extract_dir, xdelta_files, patch_output_dir)
 	elif(!pck_files.is_empty()):
 		var patcher_result := Steam.ensure_patchers()
 		if(!patcher_result.ok):
 			delete_directory_if_exists(extract_dir)
 			delete_directory_if_exists(patch_base_temp_dir)
 			return patcher_result
-		build_result = _build_gddelta_mod(g_name, patch_base_dir, extract_dir, pck_files, mod_dir, m_name)
+		build_result = _build_gddelta_mod(g_name, patch_base_dir, extract_dir, pck_files, patch_output_dir, m_name)
 	else:
 		Util.set_loading_status("Copying mod files...")
-		build_result = copy_directory(extract_dir, mod_dir)
+		build_result = copy_directory(extract_dir, patch_output_dir)
+
+	if(build_result.ok && !base_mod_name.strip_edges().is_empty()):
+		if(!xdelta_files.is_empty() || pck_files.is_empty()):
+			var merge_patch_result := merge_directory_without_configs(patch_output_dir, patch_base_temp_dir)
+			if(!merge_patch_result.ok):
+				build_result = merge_patch_result
+			else:
+				delete_directory_if_exists(patch_output_dir)
+				build_result = _copy_changed_files(reference_base_dir, patch_base_temp_dir, mod_dir)
+		else:
+			build_result = _copy_changed_files(reference_base_dir, patch_output_dir, mod_dir)
 
 	delete_directory_if_exists(extract_dir)
 	delete_directory_if_exists(patch_base_temp_dir)
+	if(!base_mod_name.strip_edges().is_empty()):
+		delete_directory_if_exists(patch_output_dir)
 	if(!build_result.ok):
 		delete_directory_if_exists(mod_dir)
 		return build_result
 
-	var config_result := _write_json(mod_dir.path_join(CONFIG_NAME), _mod_config_data(g_name, m_name, package_metadata))
+	var config_result := _write_json(mod_dir.path_join(CONFIG_NAME), _mod_config_data(g_name, m_name, effective_metadata))
 	if(!config_result.ok):
 		delete_directory_if_exists(mod_dir)
 		return config_result
@@ -580,11 +612,10 @@ func _copy_override_files(source_dir: String, destination_dir: String, excluded_
 	for directory_name in DirAccess.get_directories_at(current_source_dir):
 		var nested_relative := directory_name if relative_path.is_empty() else relative_path.path_join(directory_name)
 		var nested_result := _copy_override_files(source_dir, destination_dir, excluded_extensions, nested_relative)
-		if(!nested_result.ok):
-			return nested_result
+		if(!nested_result.ok): return nested_result;
 
 	for file_name in DirAccess.get_files_at(current_source_dir):
-		if(file_name == CONFIG_NAME): continue;
+		if(file_name == CONFIG_NAME || file_name == MOD_METADATA_NAME): continue;
 		var skip := false
 		for extension in excluded_extensions:
 			if(file_name.to_lower().ends_with(extension)):
@@ -599,6 +630,45 @@ func _copy_override_files(source_dir: String, destination_dir: String, excluded_
 			return Util.Stats.new(false, Util.trans("error.failed_to_copy_override_file") + ": " + file_relative)
 
 	return Util.Stats.new(true, "status.ok")
+
+func _copy_changed_files(base_dir: String, result_dir: String, destination_dir: String, relative_path: String = "") -> Util.Stats:
+	var current_result_dir := result_dir if relative_path.is_empty() else result_dir.path_join(relative_path)
+	for directory_name in DirAccess.get_directories_at(current_result_dir):
+		var nested_relative := directory_name if relative_path.is_empty() else relative_path.path_join(directory_name)
+		var nested_result := _copy_changed_files(base_dir, result_dir, destination_dir, nested_relative)
+		if(!nested_result.ok):
+			return nested_result
+
+	for file_name in DirAccess.get_files_at(current_result_dir):
+		if(file_name == CONFIG_NAME || file_name == MOD_METADATA_NAME):
+			continue
+		var file_relative := file_name if relative_path.is_empty() else relative_path.path_join(file_name)
+		var result_file := result_dir.path_join(file_relative)
+		var base_file := base_dir.path_join(file_relative)
+		if(FileAccess.file_exists(base_file) && _files_match(base_file, result_file)):
+			continue
+		var destination_file := destination_dir.path_join(file_relative)
+		ensure_directory(destination_file.get_base_dir())
+		if(FileAccess.file_exists(destination_file)):
+			DirAccess.remove_absolute(destination_file)
+		var copy_error := DirAccess.copy_absolute(result_file, destination_file)
+		if(copy_error != OK):
+			return Util.Stats.new(false, Util.trans("error.failed_to_copy_file") + ": " + file_relative)
+
+	return Util.Stats.new(true, "status.ok")
+
+func _files_match(left_path: String, right_path: String) -> bool:
+	if(!FileAccess.file_exists(left_path) || !FileAccess.file_exists(right_path)):
+		return false
+	var left_file := FileAccess.open(left_path, FileAccess.READ)
+	if(left_file == null):
+		return false
+	var right_file := FileAccess.open(right_path, FileAccess.READ)
+	if(right_file == null):
+		return false
+	if(left_file.get_length() != right_file.get_length()):
+		return false
+	return left_file.get_buffer(left_file.get_length()) == right_file.get_buffer(right_file.get_length())
 
 func _read_json(path: String) -> Util.Stats:
 	if(!FileAccess.file_exists(path)):

@@ -9,6 +9,7 @@ signal game_created(game_name: String, executable_path: String)
 @onready var create_button: Button = %CreateButton
 @onready var close_button: Button = %CloseButton
 @onready var game_exe_dialog: FileDialog = %GameExeDialog
+var picker_active := false
 
 func open_dialog() -> void:
 	title_label.text = tr("ui.dialog.add_game")
@@ -18,16 +19,24 @@ func open_dialog() -> void:
 	game_name_edit.grab_focus()
 
 func _notification(what: int) -> void:
-	if(what != NOTIFICATION_WM_WINDOW_FOCUS_OUT || !visible || game_exe_dialog.visible): return;
+	if(what != NOTIFICATION_WM_WINDOW_FOCUS_OUT || !visible || picker_active || game_exe_dialog.visible): return;
 	hide()
 
 func _on_browse_pressed() -> void:
+	picker_active = true
 	game_exe_dialog.popup_centered_ratio(0.8)
 
 func _on_game_exe_selected(path: String) -> void:
 	game_exe_edit.text = path
 	if(game_name_edit.text.is_empty()):
 		game_name_edit.text = path.get_file().get_basename()
+	call_deferred("_finish_picker_interaction")
+
+func _on_picker_canceled() -> void:
+	call_deferred("_finish_picker_interaction")
+
+func _finish_picker_interaction() -> void:
+	picker_active = false
 
 func _on_confirmed() -> void:
 	var game_name := game_name_edit.text.strip_edges()

@@ -36,6 +36,7 @@ signal steam_login_requested(steam_username: String, steam_password: String)
 var current_is_mod := false
 var selected_thumbnail_path := ""
 var has_item_settings := false
+var picker_active := false
 
 func open_dialog(app_config: Dictionary, item_config: Dictionary = {}, is_mod: bool = false) -> void:
 	current_is_mod = is_mod
@@ -66,26 +67,38 @@ func open_dialog(app_config: Dictionary, item_config: Dictionary = {}, is_mod: b
 
 func _notification(what: int) -> void:
 	if(what != NOTIFICATION_WM_WINDOW_FOCUS_OUT || !visible): return;
-	if(folder_dialog.visible || save_folder_dialog.visible || thumbnail_dialog.visible): return;
+	if(picker_active || folder_dialog.visible || save_folder_dialog.visible || thumbnail_dialog.visible): return;
 	hide()
 
 func _on_browse_pressed() -> void:
+	picker_active = true
 	folder_dialog.popup_centered_ratio(0.8)
 
 func _on_directory_selected(path: String) -> void:
 	steam_game_path_edit.text = path
+	call_deferred("_finish_picker_interaction")
 
 func _on_save_browse_pressed() -> void:
+	picker_active = true
 	save_folder_dialog.popup_centered_ratio(0.8)
 
 func _on_save_directory_selected(path: String) -> void:
 	save_path_edit.text = path
+	call_deferred("_finish_picker_interaction")
 
 func _on_thumbnail_browse_pressed() -> void:
+	picker_active = true
 	thumbnail_dialog.popup_centered_ratio(0.8)
 
 func _on_thumbnail_selected(path: String) -> void:
 	selected_thumbnail_path = path
+	call_deferred("_finish_picker_interaction")
+
+func _on_picker_canceled() -> void:
+	call_deferred("_finish_picker_interaction")
+
+func _finish_picker_interaction() -> void:
+	picker_active = false
 
 func _on_steam_login_button_pressed() -> void:
 	steam_login_requested.emit(steam_username_edit.text.strip_edges(), steam_password_edit.text)

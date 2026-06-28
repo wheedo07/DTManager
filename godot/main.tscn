@@ -331,15 +331,11 @@ alignment = 0
 unique_name_in_owner = true
 visible = false
 layout_mode = 0
-offset_right = 620.0
-offset_bottom = 304.0
 
 [node name="AddModDialog" parent="." unique_id=1521004064 instance=ExtResource("4_mod_dialog")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 0
-offset_right = 620.0
-offset_bottom = 304.0
 
 [node name="GameSettingsDialog" parent="." unique_id=302064808 instance=ExtResource("5_settings_dialog")]
 unique_name_in_owner = true
@@ -352,8 +348,6 @@ offset_bottom = 517.0
 unique_name_in_owner = true
 visible = false
 layout_mode = 0
-offset_right = 518.0
-offset_bottom = 450.0
 
 [node name="DeleteConfirmDialog" type="PanelContainer" parent="." unique_id=1739442004]
 unique_name_in_owner = true

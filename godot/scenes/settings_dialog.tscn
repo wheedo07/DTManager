@@ -6,22 +6,13 @@
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_3t1xm"]
 
 [node name="GameSettingsDialog" type="PanelContainer" unique_id=1600996954]
-oversampling_override = 1.0
-size = Vector2i(784, 517)
-visible = true
+offset_right = 784.0
+offset_bottom = 517.0
 theme = ExtResource("1_theme")
 script = ExtResource("2_script")
 
 [node name="Margin" type="MarginContainer" parent="." unique_id=748032447]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 3.0
-offset_top = 3.0
-offset_right = -3.0
-offset_bottom = -3.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10

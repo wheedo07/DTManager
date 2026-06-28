@@ -55,7 +55,26 @@ func _apply_default_game_config(config: Dictionary, app_id: String) -> void:
 	var defaults: Dictionary = defaults_result.data.get(app_id, {})
 	for key in defaults.keys():
 		if(key in ["name", "run_path", "steam_uri", "steam_game_path"]): continue;
-		config[str(key)] = defaults[key];
+		config[str(key)] = _expand_env_vars(defaults[key]);
+
+func _expand_env_vars(value):
+	if(typeof(value) != TYPE_STRING): return value;
+	var text := str(value)
+	var regex := RegEx.new()
+	if(regex.compile("%([^%]+)%") != OK): return text;
+	var result := text
+	var matches := regex.search_all(text)
+	for match in matches:
+		var env_name := match.get_string(1)
+		var env_value := OS.get_environment(env_name)
+		if(env_value.is_empty()):
+			env_value = OS.get_environment(env_name.to_upper())
+		if(env_value.is_empty()):
+			env_value = OS.get_environment(env_name.to_lower())
+		if(env_value.is_empty()):
+			continue
+		result = result.replace(match.get_string(0), env_value)
+	return result
 
 func addGame(path: String, g_name: String) -> Util.Stats:
 	if(g_name.strip_edges().is_empty()):

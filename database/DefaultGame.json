@@ -1,5 +1,8 @@
 {
     "1671210": {
-        "save_path": "C:\\Users\\wheedo\\AppData\\Local\\DELTARUNE"
+        "save_path": "%localappdata%\\DELTARUNE"
+    },
+    "391540": {
+        "save_path": "%localappdata%\\UNDERTALE"
     }
 }

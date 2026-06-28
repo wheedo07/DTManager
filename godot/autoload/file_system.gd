@@ -271,7 +271,7 @@ func get_game_save_root(g_name: String) -> String:
 	return SavePath.path_join(g_name)
 
 func get_game_save_slots_root(g_name: String) -> String:
-	return get_game_save_root(g_name).path_join("slots")
+	return get_game_save_root(g_name)
 
 func get_game_save_slot_dir(g_name: String, slot_name: String) -> String:
 	return get_game_save_slots_root(g_name).path_join(slot_name)

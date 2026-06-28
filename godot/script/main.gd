@@ -20,10 +20,12 @@ const MOD_ROW_SCENE := preload("res://scenes/mod_row.tscn");
 @onready var selected_mod_name_label: Label = %SelectedModName
 @onready var play_button: Button = %PlayButton
 @onready var open_folder_button: Button = %OpenFolderButton
+@onready var save_button: Button = %SaveButton
 @onready var delete_button: Button = %DeleteButton
 @onready var add_game_dialog: AcceptDialog = %AddGameDialog
 @onready var add_mod_dialog: AcceptDialog = %AddModDialog
 @onready var game_settings_dialog: AcceptDialog = %GameSettingsDialog
+@onready var save_dialog = %SaveDialog
 @onready var loading_overlay: Control = %LoadingOverlay
 @onready var loading_label: Label = %LoadingLabel
 
@@ -44,11 +46,15 @@ func _ready() -> void:
 	game_settings_dialog.item_settings_saved.connect(_on_item_settings_saved)
 	game_settings_dialog.maintenance_requested.connect(_on_maintenance_requested)
 	game_settings_dialog.steam_login_requested.connect(_on_steam_login_requested)
+	save_dialog.backup_requested.connect(_on_save_backup_requested)
+	save_dialog.restore_requested.connect(_on_save_restore_requested)
 	loading_overlay.visible = false
 	if(!play_button.pressed.is_connected(func() -> void: _on_action_pressed("play"))):
 		play_button.pressed.connect(func() -> void: _on_action_pressed("play"))
 	if(!open_folder_button.pressed.is_connected(func() -> void: _on_action_pressed("open_folder"))):
 		open_folder_button.pressed.connect(func() -> void: _on_action_pressed("open_folder"))
+	if(!save_button.pressed.is_connected(func() -> void: _on_action_pressed("save"))):
+		save_button.pressed.connect(func() -> void: _on_action_pressed("save"))
 	if(!delete_button.pressed.is_connected(func() -> void: _on_action_pressed("delete"))):
 		delete_button.pressed.connect(func() -> void: _on_action_pressed("delete"))
 	_bind_hover([
@@ -60,6 +66,7 @@ func _ready() -> void:
 		settings_button,
 		play_button,
 		open_folder_button,
+		save_button,
 		delete_button,
 	])
 	_refresh_all()
@@ -188,6 +195,7 @@ func _set_loading(active: bool, message: String = "ui.main.loading") -> void:
 		add_game_dialog.hide()
 		add_mod_dialog.hide()
 		game_settings_dialog.hide()
+		save_dialog.hide()
 		Util.set_loading_status(display_message)
 	else:
 		Util.clear_loading_status()
@@ -245,6 +253,8 @@ func _handle_worker_result(result) -> void:
 			pass;
 		"download_patchers":
 			pass;
+		"save_backup", "save_restore":
+			_refresh_save_dialog(true)
 		_:
 			_refresh_all();
 
@@ -325,6 +335,8 @@ func _on_action_pressed(action: String) -> void:
 			_play_selected_mod();
 		"open_folder":
 			_open_selected_folder();
+		"save":
+			_open_save_dialog();
 		"delete":
 			_delete_selected_item();
 		_:
@@ -367,6 +379,27 @@ func _delete_selected_item() -> void:
 		return;
 
 	_start_worker("delete", "Deleting mod...", Callable(self, "_thread_delete_mod").bind(str(_selected_game().get("name", "")), str(_selected_mod().get("name", ""))));
+
+func _open_save_dialog() -> void:
+	if(games.is_empty()):
+		Global.alert(tr("error.no_game_selected"))
+		return
+	_refresh_save_dialog(true)
+
+func _refresh_save_dialog(open_dialog: bool = false) -> void:
+	if(games.is_empty()):
+		return
+	var game_name := str(_selected_game().get("name", ""))
+	var config_result := Filesys.load_game_config(game_name)
+	if(!config_result.ok):
+		Global.alert(config_result.message)
+		return
+	var save_path := str(config_result.data.get("save_path", ""))
+	var slots := Filesys.list_save_slots(game_name)
+	if(open_dialog):
+		save_dialog.open_dialog(game_name, save_path, slots)
+		return
+	save_dialog.refresh_slots(slots)
 
 func _on_game_created(game_name: String, executable_path: String) -> void:
 	_start_worker("add_game", "Copying game files...", Callable(self, "_thread_add_game").bind(executable_path, game_name), {"game_name": game_name})
@@ -411,6 +444,14 @@ func _on_steam_login_requested(steam_username: String, steam_password: String) -
 	if(loading_active): return;
 	_start_worker("steam_login", "Logging in to Steam...", Callable(self, "_thread_steam_login").bind(steam_username, steam_password))
 
+func _on_save_backup_requested(game_name: String, slot_name: String) -> void:
+	if(loading_active): return;
+	_start_worker("save_backup", "Backing up save...", Callable(self, "_thread_backup_save").bind(game_name, slot_name))
+
+func _on_save_restore_requested(game_name: String, slot_name: String) -> void:
+	if(loading_active): return;
+	_start_worker("save_restore", "Restoring save...", Callable(self, "_thread_restore_save").bind(game_name, slot_name))
+
 func _thread_add_game(executable_path: String, game_name: String) -> Dictionary:
 	return Filesys.addGame(executable_path, game_name).to_dict();
 
@@ -427,6 +468,12 @@ func _thread_steam_login(steam_username: String, steam_password: String) -> Dict
 	})
 	if(!save_result.ok): return save_result.to_dict();
 	return Steam.login(steam_username, steam_password).to_dict();
+
+func _thread_backup_save(game_name: String, slot_name: String) -> Dictionary:
+	return Filesys.backup_save_slot(game_name, slot_name).to_dict();
+
+func _thread_restore_save(game_name: String, slot_name: String) -> Dictionary:
+	return Filesys.restore_save_slot(game_name, slot_name).to_dict();
 
 func _thread_save_app_settings(steam_username: String, steam_password: String) -> Dictionary:
 	return Filesys.save_app_config({

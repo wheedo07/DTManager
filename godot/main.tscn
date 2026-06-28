@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://ddplem4cob052" path="res://scenes/add_game_dialog.tscn" id="3_dialog"]
 [ext_resource type="PackedScene" uid="uid://dneqadnovmkt4" path="res://scenes/add_mod_dialog.tscn" id="4_mod_dialog"]
 [ext_resource type="PackedScene" uid="uid://cgqidrddyrtqm" path="res://scenes/settings_dialog.tscn" id="5_settings_dialog"]
+[ext_resource type="PackedScene" uid="uid://cf27u8qtkmc1b" path="res://scenes/save_dialog.tscn" id="6_save_dialog"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_clear"]
 bg_color = Color(0, 0, 0, 0)
@@ -221,7 +222,7 @@ layout_mode = 2
 theme_override_constants/separation = 14
 
 [node name="PreviewFrame" type="PanelContainer" parent="Margin/Root/Body/Content/DetailColumn" unique_id=533406164]
-custom_minimum_size = Vector2(0, 280)
+custom_minimum_size = Vector2(0, 250)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_frame")
 
@@ -302,6 +303,18 @@ theme_override_styles/focus = SubResource("StyleBoxFlat_clear")
 text = "Open Folder"
 alignment = 0
 
+[node name="SaveButton" type="Button" parent="Margin/Root/Body/Content/DetailColumn/ActionList" unique_id=175763481]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("StyleBoxFlat_clear")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_clear")
+theme_override_styles/hover = SubResource("StyleBoxFlat_clear")
+theme_override_styles/focus = SubResource("StyleBoxFlat_clear")
+text = "Save"
+alignment = 0
+
 [node name="DeleteButton" type="Button" parent="Margin/Root/Body/Content/DetailColumn/ActionList" unique_id=62792418]
 unique_name_in_owner = true
 layout_mode = 2
@@ -323,6 +336,10 @@ unique_name_in_owner = true
 visible = false
 
 [node name="GameSettingsDialog" parent="." unique_id=302064808 instance=ExtResource("5_settings_dialog")]
+unique_name_in_owner = true
+visible = false
+
+[node name="SaveDialog" parent="." unique_id=497443820 instance=ExtResource("6_save_dialog")]
 unique_name_in_owner = true
 visible = false
 

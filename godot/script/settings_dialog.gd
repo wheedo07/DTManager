@@ -70,12 +70,8 @@ func open_dialog(app_config: Dictionary, item_config: Dictionary = {}, is_mod: b
 		game_name_edit.grab_focus()
 
 func _notification(what: int) -> void:
-	if(what != NOTIFICATION_WM_WINDOW_FOCUS_OUT):
-		return
-	if(!visible):
-		return
-	if(folder_dialog.visible || save_folder_dialog.visible || thumbnail_dialog.visible):
-		return
+	if(what != NOTIFICATION_WM_WINDOW_FOCUS_OUT || !visible): return;
+	if(folder_dialog.visible || save_folder_dialog.visible || thumbnail_dialog.visible): return;
 	hide()
 
 func _on_browse_pressed() -> void:

@@ -1,0 +1,81 @@
+[gd_scene format=3 uid="uid://cf27u8qtkmc1b"]
+
+[ext_resource type="Script" uid="uid://dyr010tq1o4gy" path="res://script/save_dialog.gd" id="1_script"]
+[ext_resource type="Theme" uid="uid://bl76nfqlr3omk" path="res://Themes/main_theme.tres" id="2_theme"]
+
+[node name="SaveDialog" type="AcceptDialog" unique_id=1397527411]
+oversampling_override = 1.0
+title = "ui.dialog.save_slots"
+initial_position = 2
+size = Vector2i(596, 479)
+visible = true
+exclusive = false
+theme = ExtResource("2_theme")
+ok_button_text = "Close"
+script = ExtResource("1_script")
+
+[node name="Root" type="MarginContainer" parent="." unique_id=1714145995]
+offset_left = 3.0
+offset_top = 3.0
+offset_right = 593.0
+offset_bottom = 423.0
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBox" type="VBoxContainer" parent="Root" unique_id=352273580]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="GameLabel" type="Label" parent="Root/VBox" unique_id=745891339]
+layout_mode = 2
+text = "ui.save.game"
+
+[node name="GameNameLabel" type="Label" parent="Root/VBox" unique_id=102401]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "-"
+
+[node name="SavePathLabel" type="Label" parent="Root/VBox" unique_id=662871687]
+layout_mode = 2
+text = "ui.save.folder"
+
+[node name="SavePathValue" type="Label" parent="Root/VBox" unique_id=102402]
+unique_name_in_owner = true
+layout_mode = 2
+text = "-"
+autowrap_mode = 2
+
+[node name="SlotsLabel" type="Label" parent="Root/VBox" unique_id=2138496266]
+layout_mode = 2
+text = "ui.save.slots"
+
+[node name="SlotList" type="ItemList" parent="Root/VBox" unique_id=102403]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 180)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="EmptyLabel" type="Label" parent="Root/VBox" unique_id=102404]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "ui.save.empty"
+horizontal_alignment = 1
+
+[node name="Buttons" type="HBoxContainer" parent="Root/VBox" unique_id=1590382888]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 2
+
+[node name="BackupButton" type="Button" parent="Root/VBox/Buttons" unique_id=102405]
+unique_name_in_owner = true
+layout_mode = 2
+text = "ui.save.backup_current"
+
+[node name="RestoreButton" type="Button" parent="Root/VBox/Buttons" unique_id=102406]
+unique_name_in_owner = true
+layout_mode = 2
+text = "ui.save.restore_selected"

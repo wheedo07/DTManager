@@ -1,0 +1,89 @@
+[gd_scene format=3 uid="uid://deai8fpurnra0"]
+
+[ext_resource type="Theme" uid="uid://bl76nfqlr3omk" path="res://Themes/main_theme.tres" id="1_theme"]
+[ext_resource type="Script" uid="uid://dkfhmwkep7yge" path="res://script/save_slot_row.gd" id="2_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_clear"]
+bg_color = Color(0, 0, 0, 0)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_p3fwh"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_62sob"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_rx6h8"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_qluub"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_walyu"]
+
+[node name="SaveSlotRow" type="HBoxContainer" unique_id=254264953]
+custom_minimum_size = Vector2(478, 48)
+offset_right = 478.0
+offset_bottom = 48.0
+size_flags_horizontal = 3
+theme = ExtResource("1_theme")
+theme_override_constants/separation = 8
+script = ExtResource("2_script")
+
+[node name="CardPanel" type="PanelContainer" parent="." unique_id=120001]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CardRow" type="HBoxContainer" parent="CardPanel" unique_id=120002]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AccentBar" type="ColorRect" parent="CardPanel/CardRow" unique_id=120003]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(8, 5)
+layout_mode = 2
+offset_transform_enabled = true
+offset_transform_position = Vector2(8, 0)
+color = Color(0.24, 0.24, 0.24, 1)
+
+[node name="MainButton" type="Button" parent="CardPanel/CardRow" unique_id=120004]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_clear")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_clear")
+theme_override_styles/hover = SubResource("StyleBoxFlat_clear")
+theme_override_styles/focus = SubResource("StyleBoxFlat_clear")
+flat = true
+
+[node name="Content" type="VBoxContainer" parent="CardPanel/CardRow/MainButton" unique_id=120005]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 4
+
+[node name="NameLabel" type="Label" parent="CardPanel/CardRow/MainButton/Content" unique_id=120006]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "slot_1"
+autowrap_mode = 3
+
+[node name="StateLabel" type="Label" parent="CardPanel/CardRow/MainButton/Content" unique_id=120007]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.72, 0.72, 1)
+theme_override_font_sizes/font_size = 14
+text = "ui.save.slot"
+
+[node name="MenuButton" type="Button" parent="CardPanel/CardRow" unique_id=120008]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxEmpty_p3fwh")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_62sob")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_rx6h8")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_qluub")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_walyu")
+text = "..."

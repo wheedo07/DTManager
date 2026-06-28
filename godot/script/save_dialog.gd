@@ -1,81 +1,208 @@
-extends AcceptDialog
+extends PopupPanel
+
+const SAVE_SLOT_ROW_SCENE := preload("res://scenes/save_slot_row.tscn")
 
 signal backup_requested(game_name: String, slot_name: String)
 signal restore_requested(game_name: String, slot_name: String)
+signal rename_requested(game_name: String, old_name: String, new_name: String)
+signal delete_requested(game_name: String, slot_name: String)
+signal import_zip_requested(game_name: String, slot_name: String, zip_path: String)
+signal export_zip_requested(game_name: String, slot_name: String, zip_path: String)
+
+const MENU_IMPORT_ZIP := 1
+const MENU_EXPORT_ZIP := 2
+const MENU_BACKUP_CURRENT := 3
+const MENU_RESTORE_SELECTED := 4
+const MENU_RENAME_SELECTED := 5
+const MENU_DELETE_SELECTED := 6
 
 @onready var game_name_label: Label = %GameNameLabel
 @onready var save_path_label: Label = %SavePathValue
-@onready var slot_list: ItemList = %SlotList
+@onready var slot_list: VBoxContainer = %SlotList
 @onready var empty_label: Label = %EmptyLabel
+@onready var rename_row: HBoxContainer = %RenameRow
+@onready var rename_edit: LineEdit = %RenameEdit
 @onready var backup_button: Button = %BackupButton
-@onready var restore_button: Button = %RestoreButton
+@onready var import_button: Button = %ImportButton
+@onready var close_button: Button = %CloseButton
+@onready var context_menu: PopupMenu = %ContextMenu
+@onready var import_zip_dialog: FileDialog = %ImportZipDialog
+@onready var export_zip_dialog: FileDialog = %ExportZipDialog
 
 var current_game_name := ""
+var editing_slot_name := ""
+var selected_slot_name := ""
+var current_slots: Array[String] = []
 
 func _ready() -> void:
-	backup_button.pressed.connect(_on_backup_pressed)
-	restore_button.pressed.connect(_on_restore_pressed)
-	slot_list.item_selected.connect(func(_index: int) -> void: _refresh_actions())
-	slot_list.empty_clicked.connect(func(_at_position: Vector2, _mouse_button_index: int) -> void:
-		slot_list.deselect_all()
-		_refresh_actions()
-	)
+	backup_button.pressed.connect(_emit_backup_current)
+	import_button.pressed.connect(func() -> void: import_zip_dialog.popup_centered_ratio(0.8))
+	close_button.pressed.connect(hide)
+	rename_edit.text_submitted.connect(_on_rename_submitted)
+	context_menu.id_pressed.connect(_on_context_menu_id_pressed)
+	import_zip_dialog.file_selected.connect(_on_import_zip_selected)
+	export_zip_dialog.file_selected.connect(_on_export_zip_selected)
 
 func open_dialog(game_name: String, save_path: String, slots: Array[String]) -> void:
 	current_game_name = game_name
+	editing_slot_name = ""
+	selected_slot_name = ""
 	game_name_label.text = game_name
 	save_path_label.text = save_path
 	_set_slots(slots)
+	_hide_rename()
 	popup_centered()
 
 func refresh_slots(slots: Array[String]) -> void:
-	var selected_slot := get_selected_slot_name()
-	_set_slots(slots, selected_slot)
+	_set_slots(slots, selected_slot_name)
 
 func get_selected_slot_name() -> String:
-	var selected := slot_list.get_selected_items()
-	if(selected.is_empty()): return "";
-	return slot_list.get_item_text(selected[0])
+	return selected_slot_name
 
 func _notification(what: int) -> void:
 	if(what != NOTIFICATION_WM_WINDOW_FOCUS_OUT || !visible): return;
+	if(context_menu.visible): return;
+	if(import_zip_dialog.visible || export_zip_dialog.visible): return;
 	hide()
 
 func _set_slots(slots: Array[String], selected_slot: String = "") -> void:
-	slot_list.clear()
-	var selected_index := -1
+	current_slots = slots.duplicate()
+	for child in slot_list.get_children():
+		child.queue_free()
+	selected_slot_name = selected_slot if slots.has(selected_slot) else ""
 	for index in range(slots.size()):
 		var slot_name := str(slots[index])
-		slot_list.add_item(slot_name)
-		if(slot_name == selected_slot):
-			selected_index = index
+		var row = SAVE_SLOT_ROW_SCENE.instantiate()
+		row.selected.connect(_on_slot_selected)
+		row.menu_requested.connect(_on_slot_menu_requested)
+		slot_list.add_child(row)
+		row.setup(slot_name, slot_name == selected_slot_name)
 	empty_label.visible = slots.is_empty()
 	slot_list.visible = !slots.is_empty()
-	if(selected_index >= 0):
-		slot_list.select(selected_index)
 	_refresh_actions()
 
 func _refresh_actions() -> void:
-	restore_button.disabled = get_selected_slot_name().is_empty()
+	pass
 
-func _on_backup_pressed() -> void:
+func _on_slot_selected(slot_name: String) -> void:
+	selected_slot_name = slot_name
+	_hide_rename()
+	refresh_slots(current_slots)
+
+func _on_slot_menu_requested(slot_name: String, anchor_rect: Rect2) -> void:
+	selected_slot_name = slot_name
+	_hide_rename()
+	refresh_slots(current_slots)
+	_open_context_menu(anchor_rect)
+
+func _emit_backup_current() -> void:
 	var slot_name := _build_slot_name()
 	backup_requested.emit(current_game_name, slot_name)
 
-func _on_restore_pressed() -> void:
+func _emit_restore_selected() -> void:
 	var slot_name := get_selected_slot_name()
 	if(slot_name.is_empty()):
 		Global.alert(tr("error.no_save_slot_selected"))
 		return
 	restore_requested.emit(current_game_name, slot_name)
 
+func _emit_delete_selected() -> void:
+	var slot_name := get_selected_slot_name()
+	if(slot_name.is_empty()):
+		Global.alert(tr("error.no_save_slot_selected"))
+		return
+	delete_requested.emit(current_game_name, slot_name)
+
+func _open_context_menu(anchor_rect: Rect2) -> void:
+	context_menu.clear()
+	var slot_name := get_selected_slot_name()
+	if(!slot_name.is_empty()):
+		context_menu.add_item(tr("ui.save.restore_selected"), MENU_RESTORE_SELECTED)
+		context_menu.add_item(tr("ui.save.export_zip"), MENU_EXPORT_ZIP)
+		context_menu.add_item(tr("ui.save.rename_selected"), MENU_RENAME_SELECTED)
+		context_menu.add_item(tr("ui.save.delete_selected"), MENU_DELETE_SELECTED)
+	context_menu.reset_size()
+	context_menu.popup(anchor_rect)
+
+func _on_context_menu_id_pressed(id: int) -> void:
+	match id:
+		MENU_IMPORT_ZIP:
+			import_zip_dialog.popup_centered_ratio(0.8)
+		MENU_EXPORT_ZIP:
+			var slot_name := get_selected_slot_name()
+			if(slot_name.is_empty()):
+				Global.alert(tr("error.no_save_slot_selected"))
+				return
+			export_zip_dialog.current_file = "%s.zip" % slot_name
+			export_zip_dialog.popup_centered_ratio(0.8)
+		MENU_BACKUP_CURRENT:
+			_emit_backup_current()
+		MENU_RESTORE_SELECTED:
+			_emit_restore_selected()
+		MENU_RENAME_SELECTED:
+			var slot_name := get_selected_slot_name()
+			if(slot_name.is_empty()):
+				Global.alert(tr("error.no_save_slot_selected"))
+				return
+			editing_slot_name = slot_name
+			rename_row.visible = true
+			rename_edit.text = slot_name
+			rename_edit.grab_focus()
+			rename_edit.select_all()
+		MENU_DELETE_SELECTED:
+			_emit_delete_selected()
+
+func _on_import_zip_selected(path: String) -> void:
+	var slot_name := path.get_file().get_basename().strip_edges()
+	if(slot_name.is_empty()):
+		slot_name = _build_slot_name()
+	while _has_slot_name(slot_name):
+		slot_name = _next_slot_name(slot_name)
+	import_zip_requested.emit(current_game_name, slot_name, path)
+
+func _on_export_zip_selected(path: String) -> void:
+	var slot_name := get_selected_slot_name()
+	if(slot_name.is_empty()):
+		Global.alert(tr("error.no_save_slot_selected"))
+		return
+	var target_path := path
+	if(!target_path.to_lower().ends_with(".zip")):
+		target_path += ".zip"
+	export_zip_requested.emit(current_game_name, slot_name, target_path)
+
+func _on_rename_submitted(new_name: String) -> void:
+	if(editing_slot_name.is_empty()):
+		return
+	var trimmed_name := new_name.strip_edges()
+	if(trimmed_name.is_empty()):
+		Global.alert(tr("error.save_slot_name_empty"))
+		return
+	rename_requested.emit(current_game_name, editing_slot_name, trimmed_name)
+
+func _hide_rename() -> void:
+	editing_slot_name = ""
+	rename_row.visible = false
+	rename_edit.text = ""
+
 func _build_slot_name() -> String:
-	var now := Time.get_datetime_dict_from_system()
-	return "slot_%04d%02d%02d_%02d%02d%02d" % [
-		int(now.get("year", 0)),
-		int(now.get("month", 0)),
-		int(now.get("day", 0)),
-		int(now.get("hour", 0)),
-		int(now.get("minute", 0)),
-		int(now.get("second", 0)),
-	]
+	var slot_index := current_slots.size() + 1
+	var slot_name := "slot_%d" % slot_index
+	while _has_slot_name(slot_name):
+		slot_index += 1
+		slot_name = "slot_%d" % slot_index
+	return slot_name
+
+func _has_slot_name(slot_name: String) -> bool:
+	for current_slot in current_slots:
+		if(str(current_slot) == slot_name):
+			return true
+	return false
+
+func _next_slot_name(slot_name: String) -> String:
+	var regex := RegEx.new()
+	if(regex.compile("^slot_(\\d+)$") != OK):
+		return slot_name + "_1"
+	var match := regex.search(slot_name)
+	if(match == null):
+		return slot_name + "_1"
+	return "slot_%d" % (int(match.get_string(1)) + 1)

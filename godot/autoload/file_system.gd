@@ -320,6 +320,35 @@ func restore_save_slot(g_name: String, slot_name: String) -> Util.Stats:
 	delete_directory_contents(save_target_dir)
 	return copy_directory(slot_dir, save_target_dir)
 
+func rename_save_slot(g_name: String, old_name: String, new_name: String) -> Util.Stats:
+	if(g_name.strip_edges().is_empty()):
+		return Util.Stats.new(false, "error.game_name_empty")
+	if(old_name.strip_edges().is_empty() || new_name.strip_edges().is_empty()):
+		return Util.Stats.new(false, "error.save_slot_name_empty")
+	if(old_name == new_name):
+		return Util.Stats.new(true, "status.ok")
+	var slot_dir := get_game_save_slot_dir(g_name, old_name)
+	if(!DirAccess.dir_exists_absolute(slot_dir)):
+		return Util.Stats.new(false, "error.save_slot_not_found")
+	var target_dir := get_game_save_slot_dir(g_name, new_name)
+	if(DirAccess.dir_exists_absolute(target_dir)):
+		return Util.Stats.new(false, "error.save_slot_already_exists")
+	var rename_error := DirAccess.rename_absolute(slot_dir, target_dir)
+	if(rename_error != OK):
+		return Util.Stats.new(false, "error.failed_to_rename_directory")
+	return Util.Stats.new(true, "status.ok")
+
+func delete_save_slot(g_name: String, slot_name: String) -> Util.Stats:
+	if(g_name.strip_edges().is_empty()):
+		return Util.Stats.new(false, "error.game_name_empty")
+	if(slot_name.strip_edges().is_empty()):
+		return Util.Stats.new(false, "error.save_slot_name_empty")
+	var slot_dir := get_game_save_slot_dir(g_name, slot_name)
+	if(!DirAccess.dir_exists_absolute(slot_dir)):
+		return Util.Stats.new(false, "error.save_slot_not_found")
+	delete_directory_if_exists(slot_dir)
+	return Util.Stats.new(true, "status.ok")
+
 func export_save_slot(g_name: String, slot_name: String, destination_dir: String) -> Util.Stats:
 	if(destination_dir.strip_edges().is_empty()):
 		return Util.Stats.new(false, "error.export_directory_empty")
@@ -342,6 +371,36 @@ func import_save_slot(g_name: String, slot_name: String, source_dir: String) -> 
 	var slot_dir := get_game_save_slot_dir(g_name, slot_name)
 	delete_directory_if_exists(slot_dir)
 	return copy_directory(source_dir, slot_dir)
+
+func export_save_slot_zip(g_name: String, slot_name: String, zip_path: String) -> Util.Stats:
+	if(slot_name.strip_edges().is_empty()):
+		return Util.Stats.new(false, "error.save_slot_name_empty")
+	if(zip_path.strip_edges().is_empty()):
+		return Util.Stats.new(false, "error.save_zip_path_empty")
+	var slot_dir := get_game_save_slot_dir(g_name, slot_name)
+	if(!DirAccess.dir_exists_absolute(slot_dir)):
+		return Util.Stats.new(false, "error.save_slot_not_found")
+	ensure_directory(zip_path.get_base_dir())
+	if(FileAccess.file_exists(zip_path)):
+		DirAccess.remove_absolute(zip_path)
+	return _create_zip_from_directory(slot_dir, zip_path)
+
+func import_save_slot_zip(g_name: String, slot_name: String, zip_path: String) -> Util.Stats:
+	if(slot_name.strip_edges().is_empty()):
+		return Util.Stats.new(false, "error.save_slot_name_empty")
+	if(zip_path.strip_edges().is_empty()):
+		return Util.Stats.new(false, "error.save_zip_path_empty")
+	if(!FileAccess.file_exists(zip_path)):
+		return Util.Stats.new(false, "error.save_zip_file_not_found")
+	var temp_extract_dir := temp_dir("save_zip_" + g_name + "_" + slot_name)
+	delete_directory_if_exists(temp_extract_dir)
+	var extract_result := extract_zip(zip_path, temp_extract_dir)
+	if(!extract_result.ok):
+		return extract_result
+	var import_source_dir := _resolve_import_root_dir(temp_extract_dir)
+	var import_result := import_save_slot(g_name, slot_name, import_source_dir)
+	delete_directory_if_exists(temp_extract_dir)
+	return import_result
 
 func save_thumbnail(target_path: String, image_path: String) -> Util.Stats:
 	if(image_path.strip_edges().is_empty()):
@@ -446,6 +505,40 @@ func extract_zip(zip_path: String, destination_dir: String) -> Util.Stats:
 
 	zip_reader.close()
 	return Util.Stats.new(true, "ok")
+
+func _create_zip_from_directory(source_dir: String, zip_path: String) -> Util.Stats:
+	if(!DirAccess.dir_exists_absolute(source_dir)):
+		return Util.Stats.new(false, "error.source_directory_not_found")
+	var zip_packer := ZIPPacker.new()
+	var open_error := zip_packer.open(zip_path)
+	if(open_error != OK):
+		return Util.Stats.new(false, "error.failed_to_create_zip")
+	var pack_result := _pack_directory_into_zip(zip_packer, source_dir, source_dir)
+	zip_packer.close()
+	return pack_result
+
+func _pack_directory_into_zip(zip_packer: ZIPPacker, root_dir: String, current_dir: String) -> Util.Stats:
+	for directory_name in DirAccess.get_directories_at(current_dir):
+		var nested_dir := current_dir.path_join(directory_name)
+		var nested_result := _pack_directory_into_zip(zip_packer, root_dir, nested_dir)
+		if(!nested_result.ok):
+			return nested_result
+	for file_name in DirAccess.get_files_at(current_dir):
+		var source_file := current_dir.path_join(file_name)
+		var relative_path := _relative_path(root_dir, source_file).trim_prefix("/").trim_prefix("\\")
+		var start_error := zip_packer.start_file(relative_path)
+		if(start_error != OK):
+			return Util.Stats.new(false, "error.failed_to_create_zip")
+		zip_packer.write_file(FileAccess.get_file_as_bytes(source_file))
+		zip_packer.close_file()
+	return Util.Stats.new(true, "status.ok")
+
+func _resolve_import_root_dir(path: String) -> String:
+	var files := DirAccess.get_files_at(path)
+	var directories := DirAccess.get_directories_at(path)
+	if(files.is_empty() && directories.size() == 1):
+		return path.path_join(directories[0])
+	return path
 
 func collect_files_with_extension(root_dir: String, extension: String, relative_path: String = "") -> Array[String]:
 	var files: Array[String] = []

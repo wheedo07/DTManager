@@ -3,10 +3,8 @@
 [ext_resource type="Theme" uid="uid://bl76nfqlr3omk" path="res://Themes/main_theme.tres" id="1_8i3ej"]
 [ext_resource type="Script" uid="uid://dxteak3vyqe0i" path="res://script/add_game_dialog.gd" id="1_script"]
 
-[node name="AddGameDialog" type="AcceptDialog" unique_id=460514845]
+[node name="AddGameDialog" type="PopupPanel" unique_id=460514845]
 oversampling_override = 1.0
-title = "ui.dialog.add_game"
-initial_position = 2
 size = Vector2i(620, 246)
 visible = true
 theme = ExtResource("1_8i3ej")
@@ -16,28 +14,39 @@ script = ExtResource("1_script")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 3.0
-offset_top = 3.0
-offset_right = -3.0
-offset_bottom = -56.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
 
 [node name="Root" type="VBoxContainer" parent="Margin" unique_id=997021450]
 layout_mode = 2
 theme_override_constants/separation = 12
 
+[node name="Header" type="HBoxContainer" parent="Margin/Root" unique_id=123001]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="Margin/Root/Header" unique_id=123002]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ui.dialog.add_game"
+
+[node name="CloseButton" type="Button" parent="Margin/Root/Header" unique_id=123003]
+unique_name_in_owner = true
+layout_mode = 2
+text = "X"
+
 [node name="NameLabel" type="Label" parent="Margin/Root" unique_id=272847623]
 layout_mode = 2
-text = "ui.add_game.game_name"
+text = "ui.common.game_name"
 
 [node name="GameNameEdit" type="LineEdit" parent="Margin/Root" unique_id=1661812369]
 unique_name_in_owner = true
 layout_mode = 2
-placeholder_text = "ui.add_game.game_name_placeholder"
+placeholder_text = "ui.common.game_name"
 
 [node name="ExeLabel" type="Label" parent="Margin/Root" unique_id=1639442690]
 layout_mode = 2
@@ -58,12 +67,21 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "ui.settings.browse"
 
+[node name="ActionsRow" type="HBoxContainer" parent="Margin/Root" unique_id=123004]
+layout_mode = 2
+alignment = 2
+
+[node name="CreateButton" type="Button" parent="Margin/Root/ActionsRow" unique_id=123005]
+unique_name_in_owner = true
+layout_mode = 2
+text = "ui.common.create"
+
 [node name="GameExeDialog" type="FileDialog" parent="." unique_id=941161541]
 unique_name_in_owner = true
 oversampling_override = 1.0
 title = "ui.dialog.open_file"
 size = Vector2i(790, 360)
+unresizable = true
 file_mode = 0
 access = 2
 filters = PackedStringArray("*.exe ; Game Executable")
-use_native_dialog = true

@@ -1,18 +1,23 @@
-extends AcceptDialog
+extends PopupPanel
 
 signal game_created(game_name: String, executable_path: String)
 
+@onready var title_label: Label = %TitleLabel
 @onready var game_name_edit: LineEdit = %GameNameEdit
 @onready var game_exe_edit: LineEdit = %GameExeEdit
 @onready var browse_button: Button = %BrowseButton
+@onready var create_button: Button = %CreateButton
+@onready var close_button: Button = %CloseButton
 @onready var game_exe_dialog: FileDialog = %GameExeDialog
 
 func _ready() -> void:
 	browse_button.pressed.connect(_on_browse_pressed)
-	confirmed.connect(_on_confirmed)
+	create_button.pressed.connect(_on_confirmed)
+	close_button.pressed.connect(hide)
 	game_exe_dialog.file_selected.connect(_on_game_exe_selected)
 
 func open_dialog() -> void:
+	title_label.text = tr("ui.dialog.add_game")
 	game_name_edit.text = ""
 	game_exe_edit.text = ""
 	popup_centered()

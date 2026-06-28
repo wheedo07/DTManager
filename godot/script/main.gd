@@ -22,9 +22,9 @@ const MOD_ROW_SCENE := preload("res://scenes/mod_row.tscn");
 @onready var open_folder_button: Button = %OpenFolderButton
 @onready var save_button: Button = %SaveButton
 @onready var delete_button: Button = %DeleteButton
-@onready var add_game_dialog: AcceptDialog = %AddGameDialog
-@onready var add_mod_dialog: AcceptDialog = %AddModDialog
-@onready var game_settings_dialog: AcceptDialog = %GameSettingsDialog
+@onready var add_game_dialog: PopupPanel = %AddGameDialog
+@onready var add_mod_dialog: PopupPanel = %AddModDialog
+@onready var game_settings_dialog: PopupPanel = %GameSettingsDialog
 @onready var save_dialog = %SaveDialog
 @onready var loading_overlay: Control = %LoadingOverlay
 @onready var loading_label: Label = %LoadingLabel
@@ -48,6 +48,10 @@ func _ready() -> void:
 	game_settings_dialog.steam_login_requested.connect(_on_steam_login_requested)
 	save_dialog.backup_requested.connect(_on_save_backup_requested)
 	save_dialog.restore_requested.connect(_on_save_restore_requested)
+	save_dialog.rename_requested.connect(_on_save_rename_requested)
+	save_dialog.delete_requested.connect(_on_save_delete_requested)
+	save_dialog.import_zip_requested.connect(_on_save_import_zip_requested)
+	save_dialog.export_zip_requested.connect(_on_save_export_zip_requested)
 	loading_overlay.visible = false
 	if(!play_button.pressed.is_connected(func() -> void: _on_action_pressed("play"))):
 		play_button.pressed.connect(func() -> void: _on_action_pressed("play"))
@@ -253,7 +257,7 @@ func _handle_worker_result(result) -> void:
 			pass;
 		"download_patchers":
 			pass;
-		"save_backup", "save_restore":
+		"save_backup", "save_restore", "save_rename", "save_delete", "save_import_zip", "save_export_zip":
 			_refresh_save_dialog(true)
 		_:
 			_refresh_all();
@@ -452,6 +456,22 @@ func _on_save_restore_requested(game_name: String, slot_name: String) -> void:
 	if(loading_active): return;
 	_start_worker("save_restore", "Restoring save...", Callable(self, "_thread_restore_save").bind(game_name, slot_name))
 
+func _on_save_rename_requested(game_name: String, old_name: String, new_name: String) -> void:
+	if(loading_active): return;
+	_start_worker("save_rename", "Renaming save...", Callable(self, "_thread_rename_save").bind(game_name, old_name, new_name))
+
+func _on_save_delete_requested(game_name: String, slot_name: String) -> void:
+	if(loading_active): return;
+	_start_worker("save_delete", "Deleting save...", Callable(self, "_thread_delete_save").bind(game_name, slot_name))
+
+func _on_save_import_zip_requested(game_name: String, slot_name: String, zip_path: String) -> void:
+	if(loading_active): return;
+	_start_worker("save_import_zip", "Importing save ZIP...", Callable(self, "_thread_import_save_zip").bind(game_name, slot_name, zip_path))
+
+func _on_save_export_zip_requested(game_name: String, slot_name: String, zip_path: String) -> void:
+	if(loading_active): return;
+	_start_worker("save_export_zip", "Exporting save ZIP...", Callable(self, "_thread_export_save_zip").bind(game_name, slot_name, zip_path))
+
 func _thread_add_game(executable_path: String, game_name: String) -> Dictionary:
 	return Filesys.addGame(executable_path, game_name).to_dict();
 
@@ -474,6 +494,18 @@ func _thread_backup_save(game_name: String, slot_name: String) -> Dictionary:
 
 func _thread_restore_save(game_name: String, slot_name: String) -> Dictionary:
 	return Filesys.restore_save_slot(game_name, slot_name).to_dict();
+
+func _thread_rename_save(game_name: String, old_name: String, new_name: String) -> Dictionary:
+	return Filesys.rename_save_slot(game_name, old_name, new_name).to_dict();
+
+func _thread_delete_save(game_name: String, slot_name: String) -> Dictionary:
+	return Filesys.delete_save_slot(game_name, slot_name).to_dict();
+
+func _thread_import_save_zip(game_name: String, slot_name: String, zip_path: String) -> Dictionary:
+	return Filesys.import_save_slot_zip(game_name, slot_name, zip_path).to_dict();
+
+func _thread_export_save_zip(game_name: String, slot_name: String, zip_path: String) -> Dictionary:
+	return Filesys.export_save_slot_zip(game_name, slot_name, zip_path).to_dict();
 
 func _thread_save_app_settings(steam_username: String, steam_password: String) -> Dictionary:
 	return Filesys.save_app_config({

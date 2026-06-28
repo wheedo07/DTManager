@@ -1,10 +1,11 @@
-extends AcceptDialog
+extends PopupPanel
 
 signal app_settings_saved(steam_username: String, steam_password: String)
 signal item_settings_saved(name_value: String, steam_game_path: String, save_path: String, thumbnail_path: String, is_mod: bool)
 signal maintenance_requested(action: String)
 signal steam_login_requested(steam_username: String, steam_password: String)
 
+@onready var title_label: Label = %TitleLabel
 @onready var tabs: TabContainer = %Tabs
 @onready var app_section: VBoxContainer = %AppSection
 @onready var item_section: VBoxContainer = %ItemSection
@@ -28,6 +29,8 @@ signal steam_login_requested(steam_username: String, steam_password: String)
 @onready var thumbnail_browse_button: Button = %ThumbnailBrowseButton
 @onready var thumbnail_dialog: FileDialog = %ThumbnailDialog
 @onready var download_patchers_button: Button = %DownloadPatchersButton
+@onready var save_button: Button = %SaveButton
+@onready var close_button: Button = %CloseButton
 
 var current_is_mod := false
 var selected_thumbnail_path := ""
@@ -39,7 +42,8 @@ func _ready() -> void:
 	thumbnail_browse_button.pressed.connect(_on_thumbnail_browse_pressed)
 	steam_login_button.pressed.connect(func() -> void: steam_login_requested.emit(steam_username_edit.text.strip_edges(), steam_password_edit.text))
 	download_patchers_button.pressed.connect(func() -> void: maintenance_requested.emit("download_patchers"))
-	confirmed.connect(_on_confirmed)
+	save_button.pressed.connect(_on_confirmed)
+	close_button.pressed.connect(hide)
 	folder_dialog.dir_selected.connect(_on_directory_selected)
 	save_folder_dialog.dir_selected.connect(_on_save_directory_selected)
 	thumbnail_dialog.file_selected.connect(_on_thumbnail_selected)
@@ -47,8 +51,8 @@ func _ready() -> void:
 func open_dialog(app_config: Dictionary, item_config: Dictionary = {}, is_mod: bool = false) -> void:
 	current_is_mod = is_mod
 	has_item_settings = !item_config.is_empty()
-	title = tr("ui.dialog.settings")
-	game_name_label.text = tr("ui.settings.mod_name") if is_mod else tr("ui.settings.game_name")
+	title_label.text = tr("ui.settings.title")
+	game_name_label.text = tr("ui.common.mod_name") if is_mod else tr("ui.common.game_name")
 	game_name_edit.text = str(item_config.get("name", ""))
 	steam_game_path_edit.text = str(item_config.get("steam_game_path", ""))
 	save_path_edit.text = str(item_config.get("save_path", ""))

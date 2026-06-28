@@ -3,10 +3,8 @@
 [ext_resource type="Theme" uid="uid://bl76nfqlr3omk" path="res://Themes/main_theme.tres" id="1_k4o05"]
 [ext_resource type="Script" uid="uid://tu1ccsibbwxc" path="res://script/add_mod_dialog.gd" id="1_script"]
 
-[node name="AddModDialog" type="AcceptDialog" unique_id=1854692549]
+[node name="AddModDialog" type="PopupPanel" unique_id=1854692549]
 oversampling_override = 1.0
-title = "ui.dialog.add_mod"
-initial_position = 2
 size = Vector2i(620, 280)
 visible = true
 theme = ExtResource("1_k4o05")
@@ -16,28 +14,39 @@ script = ExtResource("1_script")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 3.0
-offset_top = 3.0
-offset_right = -3.0
-offset_bottom = -56.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
 
 [node name="Root" type="VBoxContainer" parent="Margin" unique_id=763710867]
 layout_mode = 2
 theme_override_constants/separation = 12
 
+[node name="Header" type="HBoxContainer" parent="Margin/Root" unique_id=124001]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="Margin/Root/Header" unique_id=124002]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ui.dialog.add_mod"
+
+[node name="CloseButton" type="Button" parent="Margin/Root/Header" unique_id=124003]
+unique_name_in_owner = true
+layout_mode = 2
+text = "X"
+
 [node name="NameLabel" type="Label" parent="Margin/Root" unique_id=764127949]
 layout_mode = 2
-text = "ui.add_mod.mod_name"
+text = "ui.common.mod_name"
 
 [node name="ModNameEdit" type="LineEdit" parent="Margin/Root" unique_id=681699079]
 unique_name_in_owner = true
 layout_mode = 2
-placeholder_text = "ui.add_mod.mod_name_placeholder"
+placeholder_text = "ui.common.mod_name"
 
 [node name="SourceLabel" type="Label" parent="Margin/Root" unique_id=227503848]
 layout_mode = 2
@@ -58,10 +67,19 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "ui.settings.browse"
 
+[node name="ActionsRow" type="HBoxContainer" parent="Margin/Root" unique_id=124004]
+layout_mode = 2
+alignment = 2
+
+[node name="CreateButton" type="Button" parent="Margin/Root/ActionsRow" unique_id=124005]
+unique_name_in_owner = true
+layout_mode = 2
+text = "ui.common.create"
+
 [node name="ModSourceDialog" type="FileDialog" parent="." unique_id=2064682832]
 unique_name_in_owner = true
 title = "ui.dialog.open_file"
+unresizable = true
 file_mode = 0
 access = 2
 filters = PackedStringArray("*.zip, *.pck ; Mod Package")
-use_native_dialog = true

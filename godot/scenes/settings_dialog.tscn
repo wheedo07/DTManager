@@ -3,10 +3,8 @@
 [ext_resource type="Theme" uid="uid://bl76nfqlr3omk" path="res://Themes/main_theme.tres" id="1_theme"]
 [ext_resource type="Script" uid="uid://bgij6m1wuvr8q" path="res://script/settings_dialog.gd" id="2_script"]
 
-[node name="GameSettingsDialog" type="AcceptDialog" unique_id=1600996954]
+[node name="GameSettingsDialog" type="PopupPanel" unique_id=1600996954]
 oversampling_override = 1.0
-title = "ui.settings.title"
-initial_position = 2
 size = Vector2i(695, 410)
 visible = true
 theme = ExtResource("1_theme")
@@ -16,19 +14,30 @@ script = ExtResource("2_script")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 3.0
-offset_top = 3.0
-offset_right = -3.0
-offset_bottom = -56.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
 
 [node name="Root" type="VBoxContainer" parent="Margin" unique_id=856979027]
 layout_mode = 2
 theme_override_constants/separation = 12
+
+[node name="Header" type="HBoxContainer" parent="Margin/Root" unique_id=125001]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="Margin/Root/Header" unique_id=125002]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "ui.settings.title"
+
+[node name="CloseButton" type="Button" parent="Margin/Root/Header" unique_id=125003]
+unique_name_in_owner = true
+layout_mode = 2
+text = "X"
 
 [node name="Tabs" type="TabContainer" parent="Margin/Root" unique_id=180001]
 unique_name_in_owner = true
@@ -93,7 +102,7 @@ metadata/_tab_index = 1
 [node name="GameNameLabel" type="Label" parent="Margin/Root/Tabs/ItemSection" unique_id=885392951]
 unique_name_in_owner = true
 layout_mode = 2
-text = "ui.settings.game_name"
+text = "ui.common.game_name"
 
 [node name="GameNameEdit" type="LineEdit" parent="Margin/Root/Tabs/ItemSection" unique_id=973789320]
 unique_name_in_owner = true
@@ -153,6 +162,15 @@ theme_override_constants/separation = 8
 unique_name_in_owner = true
 layout_mode = 2
 text = "ui.settings.select_image"
+
+[node name="ActionsRow" type="HBoxContainer" parent="Margin/Root" unique_id=125004]
+layout_mode = 2
+alignment = 2
+
+[node name="SaveButton" type="Button" parent="Margin/Root/ActionsRow" unique_id=125005]
+unique_name_in_owner = true
+layout_mode = 2
+text = "ui.common.save"
 
 [node name="SavePathDialog" type="FileDialog" parent="." unique_id=990993714]
 unique_name_in_owner = true

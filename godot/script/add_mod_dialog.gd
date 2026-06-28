@@ -1,21 +1,25 @@
-extends AcceptDialog
+extends PopupPanel
 
 signal mod_created(mod_name: String, source_path: String)
 
+@onready var title_label: Label = %TitleLabel
 @onready var mod_name_edit: LineEdit = %ModNameEdit
 @onready var mod_source_edit: LineEdit = %ModSourceEdit
 @onready var browse_button: Button = %BrowseButton
+@onready var create_button: Button = %CreateButton
+@onready var close_button: Button = %CloseButton
 @onready var mod_source_dialog: FileDialog = %ModSourceDialog
 
 func _ready() -> void:
 	browse_button.pressed.connect(_on_browse_pressed)
-	confirmed.connect(_on_confirmed)
+	create_button.pressed.connect(_on_confirmed)
+	close_button.pressed.connect(hide)
 	mod_source_dialog.file_selected.connect(_on_mod_source_selected)
 
 func open_dialog(base_mod_name: String = "") -> void:
 	mod_name_edit.text = ""
 	mod_source_edit.text = ""
-	title = tr("ui.dialog.add_mod") if base_mod_name.is_empty() else "Patch %s" % base_mod_name
+	title_label.text = tr("ui.dialog.add_mod") if base_mod_name.is_empty() else "Patch %s" % base_mod_name
 	popup_centered()
 	mod_name_edit.grab_focus()
 

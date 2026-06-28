@@ -1,5 +1,27 @@
 key,en,ko
 ui.game.default,Base Game,기본 게임
+ui.main.no_game,No Game,게임 없음
+ui.main.no_mod_selected,No Mod Selected,선택된 모드 없음
+ui.main.installed_mods,Installed Mods,설치된 모드
+ui.main.no_splash_detected,No Splash Detected,썸네일 없음
+ui.main.loading,Loading...,불러오는 중...
+ui.mod.state_active,ACTIVE,활성
+ui.mod.state_mod,MOD,모드
+ui.dialog.add_game,Add Game,게임 추가
+ui.dialog.add_mod,Add Mod,모드 추가
+ui.dialog.patch_format,Patch %s,%s 패치
+ui.dialog.settings,Settings,설정
+ui.dialog.open_file,Open a File,파일 열기
+ui.dialog.open_directory,Open a Directory,폴더 열기
+ui.add_game.game_name,Game Name,게임 이름
+ui.add_game.game_name_placeholder,Game Name,게임 이름
+ui.add_game.executable_path,Executable Path,실행 파일 경로
+ui.add_game.executable_path_placeholder,C:/Games/Game/Game.exe,C:/Games/Game/Game.exe
+ui.add_mod.mod_name,Mod Name,모드 이름
+ui.add_mod.mod_name_placeholder,Mod Name,모드 이름
+ui.add_mod.source_path,Source Path,원본 경로
+ui.add_mod.source_path_placeholder,C:/Mods/mod.zip,C:/Mods/mod.zip
+ui.settings.mod_name,Mod Name,모드 이름
 ui.settings.title,Settings,설정
 ui.settings.app_tab,App Settings,앱 설정
 ui.settings.item_tab,Game Settings,게임 설정
@@ -8,7 +30,6 @@ ui.settings.steam_username_placeholder,Steam Account Name,스팀 계정 이름
 ui.settings.steam_password,Steam Password,스팀 비밀번호
 ui.settings.steam_password_placeholder,Steam Password,스팀 비밀번호
 ui.settings.steam_login,Steam Login,스팀 로그인
-ui.settings.check_database,Check Database,데이터베이스 확인
 ui.settings.download_patchers,Download Patchers,패처 다운로드
 ui.settings.game_name,Game Name,게임 이름
 ui.settings.name_placeholder,Name,이름

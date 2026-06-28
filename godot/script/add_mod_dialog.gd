@@ -15,7 +15,7 @@ func _ready() -> void:
 func open_dialog(base_mod_name: String = "") -> void:
 	mod_name_edit.text = ""
 	mod_source_edit.text = ""
-	title = "Add Mod" if base_mod_name.is_empty() else "Patch %s" % base_mod_name
+	title = tr("ui.dialog.add_mod") if base_mod_name.is_empty() else tr("ui.dialog.patch_format") % base_mod_name
 	popup_centered()
 	mod_name_edit.grab_focus()
 

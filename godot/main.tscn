@@ -88,7 +88,7 @@ theme_override_constants/margin_bottom = 10
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-text = "UNDERTALE"
+text = "ui.main.no_game"
 horizontal_alignment = 1
 
 [node name="NextGameButton" type="Button" parent="Margin/Root/GameBar" unique_id=242119566]
@@ -201,7 +201,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 23
-text = "Installed Mods"
+text = "ui.main.installed_mods"
 
 [node name="ModsScroll" type="ScrollContainer" parent="Margin/Root/Body/Content/ModsColumn" unique_id=1130507690]
 layout_mode = 2
@@ -255,7 +255,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 34
-text = "UNDERTALE"
+text = "ui.main.no_game"
 horizontal_alignment = 1
 
 [node name="PreviewSubtitle" type="Label" parent="Margin/Root/Body/Content/DetailColumn/PreviewFrame/PreviewMargin/PreviewCenter/PreviewStack" unique_id=1345785759]
@@ -263,7 +263,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 22
-text = "No Splash Detected"
+text = "ui.main.no_splash_detected"
 horizontal_alignment = 1
 
 [node name="SelectedModName" type="Label" parent="Margin/Root/Body/Content/DetailColumn" unique_id=139392257]
@@ -271,7 +271,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 28
-text = "DebugMode"
+text = "ui.main.no_mod_selected"
 horizontal_alignment = 1
 
 [node name="ActionList" type="VBoxContainer" parent="Margin/Root/Body/Content/DetailColumn" unique_id=1451355467]
@@ -369,7 +369,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 28
-text = "Loading..."
+text = "ui.main.loading"
 horizontal_alignment = 1
 
 [connection signal="pressed" from="Margin/Root/GameBar/PrevGameButton" to="." method="_on_prev_game_pressed"]

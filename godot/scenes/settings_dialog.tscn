@@ -76,12 +76,6 @@ text = "ui.settings.steam_login"
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="SyncDatabaseButton" type="Button" parent="Margin/Root/Tabs/AppSection/MaintenanceRow" unique_id=196550013]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-text = "ui.settings.check_database"
-
 [node name="DownloadPatchersButton" type="Button" parent="Margin/Root/Tabs/AppSection/MaintenanceRow" unique_id=1690456611]
 unique_name_in_owner = true
 layout_mode = 2
@@ -143,7 +137,7 @@ text = "ui.settings.select_image"
 [node name="SteamGamePathDialog" type="FileDialog" parent="." unique_id=690993714]
 unique_name_in_owner = true
 oversampling_override = 1.0
-title = "Open a Directory"
+title = "ui.dialog.open_directory"
 size = Vector2i(790, 360)
 file_mode = 2
 access = 2
@@ -152,7 +146,7 @@ use_native_dialog = true
 [node name="ThumbnailDialog" type="FileDialog" parent="." unique_id=1112805014]
 unique_name_in_owner = true
 oversampling_override = 1.0
-title = "Open a File"
+title = "ui.dialog.open_file"
 size = Vector2i(790, 360)
 file_mode = 0
 access = 2

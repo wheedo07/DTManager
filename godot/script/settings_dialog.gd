@@ -22,7 +22,6 @@ signal steam_login_requested(steam_username: String, steam_password: String)
 @onready var folder_dialog: FileDialog = %SteamGamePathDialog
 @onready var thumbnail_browse_button: Button = %ThumbnailBrowseButton
 @onready var thumbnail_dialog: FileDialog = %ThumbnailDialog
-@onready var sync_database_button: Button = %SyncDatabaseButton
 @onready var download_patchers_button: Button = %DownloadPatchersButton
 
 var current_is_mod := false
@@ -33,7 +32,6 @@ func _ready() -> void:
 	browse_button.pressed.connect(_on_browse_pressed)
 	thumbnail_browse_button.pressed.connect(_on_thumbnail_browse_pressed)
 	steam_login_button.pressed.connect(func() -> void: steam_login_requested.emit(steam_username_edit.text.strip_edges(), steam_password_edit.text))
-	sync_database_button.pressed.connect(func() -> void: maintenance_requested.emit("sync_database"))
 	download_patchers_button.pressed.connect(func() -> void: maintenance_requested.emit("download_patchers"))
 	confirmed.connect(_on_confirmed)
 	folder_dialog.dir_selected.connect(_on_directory_selected)
@@ -42,8 +40,8 @@ func _ready() -> void:
 func open_dialog(app_config: Dictionary, item_config: Dictionary = {}, is_mod: bool = false) -> void:
 	current_is_mod = is_mod
 	has_item_settings = !item_config.is_empty()
-	title = "Settings"
-	game_name_label.text = "Mod Name" if is_mod else "Game Name"
+	title = tr("ui.dialog.settings")
+	game_name_label.text = tr("ui.settings.mod_name") if is_mod else tr("ui.settings.game_name")
 	game_name_edit.text = str(item_config.get("name", ""))
 	steam_game_path_edit.text = str(item_config.get("steam_game_path", ""))
 	steam_username_edit.text = str(app_config.get("steam_username", ""))

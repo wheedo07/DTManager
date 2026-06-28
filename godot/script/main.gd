@@ -94,15 +94,15 @@ func _refresh_all() -> void:
 	_refresh_screen()
 
 func _refresh_screen() -> void:
-	version_label.text = "v%s (Beta)" % ProjectSettings.get_setting("application/config/version");
-	mods_header_label.text = "Installed Mods";
+	version_label.text = tr("ui.main.version_format") % ProjectSettings.get_setting("application/config/version");
+	mods_header_label.text = tr("ui.main.installed_mods");
 	_rebuild_mod_list();
 	_refresh_add_mod_button();
 
 	if(games.is_empty()):
-		game_name_label.text = "No Game"
+		game_name_label.text = tr("ui.main.no_game")
 		_show_text_preview("DT Manager", "Add a game to continue.")
-		selected_mod_name_label.text = "No Mod Selected"
+		selected_mod_name_label.text = tr("ui.main.no_mod_selected")
 		return;
 
 	var game := _selected_game()
@@ -183,17 +183,18 @@ func _selected_mod() -> Dictionary:
 func _has_selected_mod() -> bool:
 	return !mods.is_empty() && selected_mod_index >= 0 && selected_mod_index < mods.size();
 
-func _set_loading(active: bool, message: String = "Loading...") -> void:
+func _set_loading(active: bool, message: String = "ui.main.loading") -> void:
 	loading_active = active;
+	var display_message := tr(message) if message.begins_with("ui.") || message.begins_with("status.") || message.begins_with("error.") else message
 	if(active):
 		add_game_dialog.hide()
 		add_mod_dialog.hide()
 		game_settings_dialog.hide()
-		Util.set_loading_status(message)
+		Util.set_loading_status(display_message)
 	else:
 		Util.clear_loading_status()
 	loading_overlay.visible = active;
-	loading_label.text = message;
+	loading_label.text = display_message;
 
 func _start_worker(action: String, message: String, task: Callable, meta: Dictionary = {}) -> void:
 	if(loading_active): return;
@@ -244,7 +245,7 @@ func _handle_worker_result(result) -> void:
 						break;
 		"play":
 			pass;
-		"sync_database", "download_patchers":
+		"download_patchers":
 			pass;
 		_:
 			_refresh_all();
@@ -403,8 +404,6 @@ func _on_mod_created(mod_name: String, source_path: String) -> void:
 func _on_maintenance_requested(action: String) -> void:
 	if(loading_active): return;
 	match action:
-		"sync_database":
-			_start_worker("sync_database", "Syncing database...", Callable(self, "_thread_sync_database"))
 		"download_patchers":
 			_start_worker("download_patchers", "Downloading patchers...", Callable(self, "_thread_download_patchers"))
 		_:
@@ -420,9 +419,6 @@ func _thread_add_game(executable_path: String, game_name: String) -> Dictionary:
 func _thread_add_mod(game_name: String, source_path: String, mod_name: String, base_mod_name: String) -> Dictionary:
 	return Filesys.addMod(game_name, source_path, mod_name, base_mod_name).to_dict();
 
-func _thread_sync_database() -> Dictionary:
-	return Steam.check_database().to_dict();
-
 func _thread_download_patchers() -> Dictionary:
 	return Steam.ensure_patchers().to_dict();
 
@@ -431,15 +427,14 @@ func _thread_steam_login(steam_username: String, steam_password: String) -> Dict
 		"steam_username": steam_username,
 		"steam_password": steam_password,
 	})
-	if(!save_result.ok):
-		return save_result.to_dict()
+	if(!save_result.ok): return save_result.to_dict();
 	return Steam.login(steam_username, steam_password).to_dict();
 
 func _thread_save_app_settings(steam_username: String, steam_password: String) -> Dictionary:
 	return Filesys.save_app_config({
 		"steam_username": steam_username,
 		"steam_password": steam_password,
-	}).to_dict()
+	}).to_dict();
 
 func _thread_delete_game(game_name: String) -> Dictionary:
 	return Filesys.delete_game(game_name).to_dict();

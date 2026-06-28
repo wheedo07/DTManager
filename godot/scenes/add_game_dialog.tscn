@@ -5,7 +5,7 @@
 
 [node name="AddGameDialog" type="AcceptDialog" unique_id=460514845]
 oversampling_override = 1.0
-title = "Add Game"
+title = "ui.dialog.add_game"
 initial_position = 2
 size = Vector2i(620, 246)
 visible = true
@@ -32,16 +32,16 @@ theme_override_constants/separation = 12
 
 [node name="NameLabel" type="Label" parent="Margin/Root" unique_id=272847623]
 layout_mode = 2
-text = "Game Name"
+text = "ui.add_game.game_name"
 
 [node name="GameNameEdit" type="LineEdit" parent="Margin/Root" unique_id=1661812369]
 unique_name_in_owner = true
 layout_mode = 2
-placeholder_text = "Game Name"
+placeholder_text = "ui.add_game.game_name_placeholder"
 
 [node name="ExeLabel" type="Label" parent="Margin/Root" unique_id=1639442690]
 layout_mode = 2
-text = "Executable Path"
+text = "ui.add_game.executable_path"
 
 [node name="ExeRow" type="HBoxContainer" parent="Margin/Root" unique_id=1882982511]
 layout_mode = 2
@@ -51,17 +51,17 @@ theme_override_constants/separation = 8
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-placeholder_text = "C:/Games/Game/Game.exe"
+placeholder_text = "ui.add_game.executable_path_placeholder"
 
 [node name="BrowseButton" type="Button" parent="Margin/Root/ExeRow" unique_id=985843075]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Browse"
+text = "ui.settings.browse"
 
 [node name="GameExeDialog" type="FileDialog" parent="." unique_id=941161541]
 unique_name_in_owner = true
 oversampling_override = 1.0
-title = "Open a File"
+title = "ui.dialog.open_file"
 size = Vector2i(790, 360)
 file_mode = 0
 access = 2

@@ -25,7 +25,7 @@ func _on_pressed() -> void:
 	mod_selected.emit(mod_index)
 
 func _apply_state(hovered: bool) -> void:
-	state_label.text = "ACTIVE" if selected else "MOD"
+	state_label.text = tr("ui.mod.state_active") if selected else tr("ui.mod.state_mod")
 	name_label.modulate = Color(1, 0.9, 0.12, 1) if hovered else Color(1, 1, 1, 1)
 	state_label.modulate = Color(1, 0.9, 0.12, 1) if hovered || selected else Color(0.72, 0.72, 0.72, 1)
 	accent_bar.color = Color(1, 0.9, 0.12, 1) if hovered || selected else Color(0.24, 0.24, 0.24, 1)

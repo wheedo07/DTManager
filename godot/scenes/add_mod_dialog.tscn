@@ -5,7 +5,7 @@
 
 [node name="AddModDialog" type="AcceptDialog" unique_id=1854692549]
 oversampling_override = 1.0
-title = "Add Mod"
+title = "ui.dialog.add_mod"
 initial_position = 2
 size = Vector2i(620, 280)
 visible = true
@@ -32,16 +32,16 @@ theme_override_constants/separation = 12
 
 [node name="NameLabel" type="Label" parent="Margin/Root" unique_id=764127949]
 layout_mode = 2
-text = "Mod Name"
+text = "ui.add_mod.mod_name"
 
 [node name="ModNameEdit" type="LineEdit" parent="Margin/Root" unique_id=681699079]
 unique_name_in_owner = true
 layout_mode = 2
-placeholder_text = "DebugMode"
+placeholder_text = "ui.add_mod.mod_name_placeholder"
 
 [node name="SourceLabel" type="Label" parent="Margin/Root" unique_id=227503848]
 layout_mode = 2
-text = "Source Path"
+text = "ui.add_mod.source_path"
 
 [node name="SourceRow" type="HBoxContainer" parent="Margin/Root" unique_id=716225029]
 layout_mode = 2
@@ -51,16 +51,16 @@ theme_override_constants/separation = 8
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-placeholder_text = "C:/Mods/mod.zip"
+placeholder_text = "ui.add_mod.source_path_placeholder"
 
 [node name="BrowseButton" type="Button" parent="Margin/Root/SourceRow" unique_id=658214594]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Browse"
+text = "ui.settings.browse"
 
 [node name="ModSourceDialog" type="FileDialog" parent="." unique_id=2064682832]
 unique_name_in_owner = true
-title = "Open a File"
+title = "ui.dialog.open_file"
 file_mode = 0
 access = 2
 filters = PackedStringArray("*.zip, *.pck ; Mod Package")

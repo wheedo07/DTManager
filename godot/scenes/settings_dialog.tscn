@@ -5,7 +5,7 @@
 
 [node name="GameSettingsDialog" type="PopupPanel" unique_id=1600996954]
 oversampling_override = 1.0
-size = Vector2i(695, 410)
+size = Vector2i(695, 451)
 visible = true
 theme = ExtResource("1_theme")
 script = ExtResource("2_script")
@@ -14,6 +14,10 @@ script = ExtResource("2_script")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 3.0
+offset_top = 3.0
+offset_right = -3.0
+offset_bottom = -3.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 10
@@ -175,7 +179,7 @@ text = "ui.common.save"
 [node name="SavePathDialog" type="FileDialog" parent="." unique_id=990993714]
 unique_name_in_owner = true
 oversampling_override = 1.0
-title = "ui.dialog.open_directory"
+title = "Open a Directory"
 size = Vector2i(790, 360)
 file_mode = 2
 access = 2
@@ -184,7 +188,7 @@ use_native_dialog = true
 [node name="SteamGamePathDialog" type="FileDialog" parent="." unique_id=690993714]
 unique_name_in_owner = true
 oversampling_override = 1.0
-title = "ui.dialog.open_directory"
+title = "Open a Directory"
 size = Vector2i(790, 360)
 file_mode = 2
 access = 2
@@ -193,9 +197,18 @@ use_native_dialog = true
 [node name="ThumbnailDialog" type="FileDialog" parent="." unique_id=1112805014]
 unique_name_in_owner = true
 oversampling_override = 1.0
-title = "ui.dialog.open_file"
+title = "Open a File"
 size = Vector2i(790, 360)
 file_mode = 0
 access = 2
 filters = PackedStringArray("*.png, *.jpg, *.jpeg, *.webp ; Image Files")
 use_native_dialog = true
+
+[connection signal="pressed" from="Margin/Root/Header/CloseButton" to="." method="hide"]
+[connection signal="pressed" from="Margin/Root/Tabs/ItemSection/SteamGamePathRow/BrowseButton" to="." method="_on_browse_pressed"]
+[connection signal="pressed" from="Margin/Root/Tabs/ItemSection/SavePathRow/SaveBrowseButton" to="." method="_on_save_browse_pressed"]
+[connection signal="pressed" from="Margin/Root/Tabs/ItemSection/ThumbnailRow/ThumbnailBrowseButton" to="." method="_on_thumbnail_browse_pressed"]
+[connection signal="pressed" from="Margin/Root/ActionsRow/SaveButton" to="." method="_on_confirmed"]
+[connection signal="dir_selected" from="SavePathDialog" to="." method="_on_save_directory_selected"]
+[connection signal="dir_selected" from="SteamGamePathDialog" to="." method="_on_directory_selected"]
+[connection signal="file_selected" from="ThumbnailDialog" to="." method="_on_thumbnail_selected"]

@@ -10,11 +10,6 @@ signal mod_selected(index: int)
 var mod_index := 0
 var selected := false
 
-func _ready() -> void:
-	pressed.connect(_on_pressed)
-	mouse_entered.connect(func() -> void: _apply_state(true))
-	mouse_exited.connect(func() -> void: _apply_state(false))
-
 func setup(mod_name: String, is_selected: bool, index: int) -> void:
 	mod_index = index
 	selected = is_selected

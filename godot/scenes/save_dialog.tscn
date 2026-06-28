@@ -166,3 +166,11 @@ title = "ui.save.export_zip"
 unresizable = true
 access = 2
 filters = PackedStringArray("*.zip ; Save Archive")
+
+[connection signal="pressed" from="Root/VBox/Header/CloseButton" to="." method="hide"]
+[connection signal="text_submitted" from="Root/VBox/SlotsFrame/SlotsMargin/SlotsVBox/RenameRow/RenameEdit" to="." method="_on_rename_submitted"]
+[connection signal="pressed" from="Root/VBox/ActionsRow/ImportButton" to="." method="_open_import_zip_dialog"]
+[connection signal="pressed" from="Root/VBox/ActionsRow/BackupButton" to="." method="_emit_backup_current"]
+[connection signal="id_pressed" from="ContextMenu" to="." method="_on_context_menu_id_pressed"]
+[connection signal="file_selected" from="ImportZipDialog" to="." method="_on_import_zip_selected"]
+[connection signal="file_selected" from="ExportZipDialog" to="." method="_on_export_zip_selected"]

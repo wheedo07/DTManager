@@ -37,16 +37,8 @@ var selected_thumbnail_path := ""
 var has_item_settings := false
 
 func _ready() -> void:
-	browse_button.pressed.connect(_on_browse_pressed)
-	save_browse_button.pressed.connect(_on_save_browse_pressed)
-	thumbnail_browse_button.pressed.connect(_on_thumbnail_browse_pressed)
 	steam_login_button.pressed.connect(func() -> void: steam_login_requested.emit(steam_username_edit.text.strip_edges(), steam_password_edit.text))
 	download_patchers_button.pressed.connect(func() -> void: maintenance_requested.emit("download_patchers"))
-	save_button.pressed.connect(_on_confirmed)
-	close_button.pressed.connect(hide)
-	folder_dialog.dir_selected.connect(_on_directory_selected)
-	save_folder_dialog.dir_selected.connect(_on_save_directory_selected)
-	thumbnail_dialog.file_selected.connect(_on_thumbnail_selected)
 
 func open_dialog(app_config: Dictionary, item_config: Dictionary = {}, is_mod: bool = false) -> void:
 	current_is_mod = is_mod

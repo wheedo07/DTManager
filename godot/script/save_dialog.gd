@@ -32,15 +32,6 @@ var editing_slot_name := ""
 var selected_slot_name := ""
 var current_slots: Array[String] = []
 
-func _ready() -> void:
-	backup_button.pressed.connect(_emit_backup_current)
-	import_button.pressed.connect(_open_import_zip_dialog)
-	close_button.pressed.connect(hide)
-	rename_edit.text_submitted.connect(_on_rename_submitted)
-	context_menu.id_pressed.connect(_on_context_menu_id_pressed)
-	import_zip_dialog.file_selected.connect(_on_import_zip_selected)
-	export_zip_dialog.file_selected.connect(_on_export_zip_selected)
-
 func open_dialog(game_name: String, save_path: String, slots: Array[String]) -> void:
 	current_game_name = game_name
 	editing_slot_name = ""

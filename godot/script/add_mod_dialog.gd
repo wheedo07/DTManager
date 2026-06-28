@@ -10,12 +10,6 @@ signal mod_created(mod_name: String, source_path: String)
 @onready var close_button: Button = %CloseButton
 @onready var mod_source_dialog: FileDialog = %ModSourceDialog
 
-func _ready() -> void:
-	browse_button.pressed.connect(_on_browse_pressed)
-	create_button.pressed.connect(_on_confirmed)
-	close_button.pressed.connect(hide)
-	mod_source_dialog.file_selected.connect(_on_mod_source_selected)
-
 func open_dialog(base_mod_name: String = "") -> void:
 	mod_name_edit.text = ""
 	mod_source_edit.text = ""

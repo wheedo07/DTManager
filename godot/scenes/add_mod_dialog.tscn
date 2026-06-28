@@ -5,7 +5,9 @@
 
 [node name="AddModDialog" type="PopupPanel" unique_id=1854692549]
 oversampling_override = 1.0
-size = Vector2i(620, 280)
+initial_position = 3
+size = Vector2i(620, 304)
+current_screen = 0
 visible = true
 theme = ExtResource("1_k4o05")
 script = ExtResource("1_script")
@@ -14,6 +16,10 @@ script = ExtResource("1_script")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 3.0
+offset_top = 3.0
+offset_right = -3.0
+offset_bottom = -3.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 10
@@ -78,8 +84,13 @@ text = "ui.common.create"
 
 [node name="ModSourceDialog" type="FileDialog" parent="." unique_id=2064682832]
 unique_name_in_owner = true
-title = "ui.dialog.open_file"
+title = "Open a File"
 unresizable = true
 file_mode = 0
 access = 2
 filters = PackedStringArray("*.zip, *.pck ; Mod Package")
+
+[connection signal="pressed" from="Margin/Root/Header/CloseButton" to="." method="hide"]
+[connection signal="pressed" from="Margin/Root/SourceRow/BrowseButton" to="." method="_on_browse_pressed"]
+[connection signal="pressed" from="Margin/Root/ActionsRow/CreateButton" to="." method="_on_confirmed"]
+[connection signal="file_selected" from="ModSourceDialog" to="." method="_on_mod_source_selected"]

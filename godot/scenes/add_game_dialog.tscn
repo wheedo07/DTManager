@@ -5,7 +5,8 @@
 
 [node name="AddGameDialog" type="PopupPanel" unique_id=460514845]
 oversampling_override = 1.0
-size = Vector2i(620, 246)
+initial_position = 2
+size = Vector2i(620, 304)
 visible = true
 theme = ExtResource("1_8i3ej")
 script = ExtResource("1_script")
@@ -14,6 +15,10 @@ script = ExtResource("1_script")
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 3.0
+offset_top = 3.0
+offset_right = -3.0
+offset_bottom = -3.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 10
@@ -79,9 +84,14 @@ text = "ui.common.create"
 [node name="GameExeDialog" type="FileDialog" parent="." unique_id=941161541]
 unique_name_in_owner = true
 oversampling_override = 1.0
-title = "ui.dialog.open_file"
+title = "Open a File"
 size = Vector2i(790, 360)
 unresizable = true
 file_mode = 0
 access = 2
 filters = PackedStringArray("*.exe ; Game Executable")
+
+[connection signal="pressed" from="Margin/Root/Header/CloseButton" to="." method="hide"]
+[connection signal="pressed" from="Margin/Root/ExeRow/BrowseButton" to="." method="_on_browse_pressed"]
+[connection signal="pressed" from="Margin/Root/ActionsRow/CreateButton" to="." method="_on_confirmed"]
+[connection signal="file_selected" from="GameExeDialog" to="." method="_on_game_exe_selected"]

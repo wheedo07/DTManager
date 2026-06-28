@@ -65,3 +65,7 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.72, 0.72, 1)
 theme_override_font_sizes/font_size = 16
 text = "ui.mod.state_mod"
+
+[connection signal="mouse_entered" from="." to="." method="_apply_state" binds= [true]]
+[connection signal="mouse_exited" from="." to="." method="_apply_state" binds= [false]]
+[connection signal="pressed" from="." to="." method="_on_pressed"]

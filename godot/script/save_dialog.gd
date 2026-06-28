@@ -9,12 +9,10 @@ signal delete_requested(game_name: String, slot_name: String)
 signal import_zip_requested(game_name: String, slot_name: String, zip_path: String)
 signal export_zip_requested(game_name: String, slot_name: String, zip_path: String)
 
-const MENU_IMPORT_ZIP := 1
+const MENU_RESTORE_SELECTED := 1
 const MENU_EXPORT_ZIP := 2
-const MENU_BACKUP_CURRENT := 3
-const MENU_RESTORE_SELECTED := 4
-const MENU_RENAME_SELECTED := 5
-const MENU_DELETE_SELECTED := 6
+const MENU_RENAME_SELECTED := 3
+const MENU_DELETE_SELECTED := 4
 
 @onready var game_name_label: Label = %GameNameLabel
 @onready var save_path_label: Label = %SavePathValue
@@ -36,7 +34,7 @@ var current_slots: Array[String] = []
 
 func _ready() -> void:
 	backup_button.pressed.connect(_emit_backup_current)
-	import_button.pressed.connect(func() -> void: import_zip_dialog.popup_centered_ratio(0.8))
+	import_button.pressed.connect(_open_import_zip_dialog)
 	close_button.pressed.connect(hide)
 	rename_edit.text_submitted.connect(_on_rename_submitted)
 	context_menu.id_pressed.connect(_on_context_menu_id_pressed)
@@ -61,8 +59,7 @@ func get_selected_slot_name() -> String:
 
 func _notification(what: int) -> void:
 	if(what != NOTIFICATION_WM_WINDOW_FOCUS_OUT || !visible): return;
-	if(context_menu.visible): return;
-	if(import_zip_dialog.visible || export_zip_dialog.visible): return;
+	if(context_menu.visible || import_zip_dialog.visible || export_zip_dialog.visible): return;
 	hide()
 
 func _set_slots(slots: Array[String], selected_slot: String = "") -> void:
@@ -70,8 +67,8 @@ func _set_slots(slots: Array[String], selected_slot: String = "") -> void:
 	for child in slot_list.get_children():
 		child.queue_free()
 	selected_slot_name = selected_slot if slots.has(selected_slot) else ""
-	for index in range(slots.size()):
-		var slot_name := str(slots[index])
+	for slot_name_value in slots:
+		var slot_name := str(slot_name_value)
 		var row = SAVE_SLOT_ROW_SCENE.instantiate()
 		row.selected.connect(_on_slot_selected)
 		row.menu_requested.connect(_on_slot_menu_requested)
@@ -79,20 +76,14 @@ func _set_slots(slots: Array[String], selected_slot: String = "") -> void:
 		row.setup(slot_name, slot_name == selected_slot_name)
 	empty_label.visible = slots.is_empty()
 	slot_list.visible = !slots.is_empty()
-	_refresh_actions()
-
-func _refresh_actions() -> void:
-	pass
 
 func _on_slot_selected(slot_name: String) -> void:
-	selected_slot_name = slot_name
 	_hide_rename()
-	refresh_slots(current_slots)
+	_set_slots(current_slots, slot_name)
 
 func _on_slot_menu_requested(slot_name: String, anchor_rect: Rect2) -> void:
-	selected_slot_name = slot_name
 	_hide_rename()
-	refresh_slots(current_slots)
+	_set_slots(current_slots, slot_name)
 	_open_context_menu(anchor_rect)
 
 func _emit_backup_current() -> void:
@@ -113,6 +104,20 @@ func _emit_delete_selected() -> void:
 		return
 	delete_requested.emit(current_game_name, slot_name)
 
+func _open_import_zip_dialog() -> void:
+	import_zip_dialog.popup_centered_ratio(0.8)
+
+func _open_export_zip_dialog(slot_name: String) -> void:
+	export_zip_dialog.current_file = "%s.zip" % slot_name
+	export_zip_dialog.popup_centered_ratio(0.8)
+
+func _begin_rename_selected(slot_name: String) -> void:
+	editing_slot_name = slot_name
+	rename_row.visible = true
+	rename_edit.text = slot_name
+	rename_edit.grab_focus()
+	rename_edit.select_all()
+
 func _open_context_menu(anchor_rect: Rect2) -> void:
 	context_menu.clear()
 	var slot_name := get_selected_slot_name()
@@ -126,17 +131,12 @@ func _open_context_menu(anchor_rect: Rect2) -> void:
 
 func _on_context_menu_id_pressed(id: int) -> void:
 	match id:
-		MENU_IMPORT_ZIP:
-			import_zip_dialog.popup_centered_ratio(0.8)
 		MENU_EXPORT_ZIP:
 			var slot_name := get_selected_slot_name()
 			if(slot_name.is_empty()):
 				Global.alert(tr("error.no_save_slot_selected"))
 				return
-			export_zip_dialog.current_file = "%s.zip" % slot_name
-			export_zip_dialog.popup_centered_ratio(0.8)
-		MENU_BACKUP_CURRENT:
-			_emit_backup_current()
+			_open_export_zip_dialog(slot_name)
 		MENU_RESTORE_SELECTED:
 			_emit_restore_selected()
 		MENU_RENAME_SELECTED:
@@ -144,11 +144,7 @@ func _on_context_menu_id_pressed(id: int) -> void:
 			if(slot_name.is_empty()):
 				Global.alert(tr("error.no_save_slot_selected"))
 				return
-			editing_slot_name = slot_name
-			rename_row.visible = true
-			rename_edit.text = slot_name
-			rename_edit.grab_focus()
-			rename_edit.select_all()
+			_begin_rename_selected(slot_name)
 		MENU_DELETE_SELECTED:
 			_emit_delete_selected()
 
@@ -194,8 +190,7 @@ func _build_slot_name() -> String:
 
 func _has_slot_name(slot_name: String) -> bool:
 	for current_slot in current_slots:
-		if(str(current_slot) == slot_name):
-			return true
+		if(str(current_slot) == slot_name): return true;
 	return false
 
 func _next_slot_name(slot_name: String) -> String:

@@ -37,6 +37,7 @@ var worker_meta: Dictionary = {}
 var loading_active := false
 
 func _ready() -> void:
+	version_label.text = "v%s (Beta)" % ProjectSettings.get_setting("application/config/version");
 	add_game_dialog.game_created.connect(_on_game_created)
 	add_mod_dialog.mod_created.connect(_on_mod_created)
 	game_settings_dialog.app_settings_saved.connect(_on_app_settings_saved)
@@ -94,7 +95,6 @@ func _refresh_all() -> void:
 	_refresh_screen()
 
 func _refresh_screen() -> void:
-	version_label.text = tr("ui.main.version_format") % ProjectSettings.get_setting("application/config/version");
 	mods_header_label.text = tr("ui.main.installed_mods");
 	_rebuild_mod_list();
 	_refresh_add_mod_button();

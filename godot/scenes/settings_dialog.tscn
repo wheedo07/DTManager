@@ -114,9 +114,30 @@ theme_override_constants/separation = 8
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-placeholder_text = "C:/Program Files (x86)/Steam/steamapps/common/[Game]"
+placeholder_text = "ui.settings.steam_game_folder_placeholder"
 
 [node name="BrowseButton" type="Button" parent="Margin/Root/Tabs/ItemSection/SteamGamePathRow" unique_id=1968481262]
+unique_name_in_owner = true
+layout_mode = 2
+text = "ui.settings.browse"
+
+[node name="SavePathLabel" type="Label" parent="Margin/Root/Tabs/ItemSection" unique_id=1168481262]
+unique_name_in_owner = true
+layout_mode = 2
+text = "ui.settings.save_folder"
+
+[node name="SavePathRow" type="HBoxContainer" parent="Margin/Root/Tabs/ItemSection" unique_id=760292403]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SavePathEdit" type="LineEdit" parent="Margin/Root/Tabs/ItemSection/SavePathRow" unique_id=1832745642]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "ui.settings.save_folder_placeholder"
+
+[node name="SaveBrowseButton" type="Button" parent="Margin/Root/Tabs/ItemSection/SavePathRow" unique_id=2068481262]
 unique_name_in_owner = true
 layout_mode = 2
 text = "ui.settings.browse"
@@ -133,6 +154,15 @@ theme_override_constants/separation = 8
 unique_name_in_owner = true
 layout_mode = 2
 text = "ui.settings.select_image"
+
+[node name="SavePathDialog" type="FileDialog" parent="." unique_id=990993714]
+unique_name_in_owner = true
+oversampling_override = 1.0
+title = "ui.dialog.open_directory"
+size = Vector2i(790, 360)
+file_mode = 2
+access = 2
+use_native_dialog = true
 
 [node name="SteamGamePathDialog" type="FileDialog" parent="." unique_id=690993714]
 unique_name_in_owner = true

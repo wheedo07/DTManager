@@ -6,8 +6,7 @@ var close_block_message := ""
 func _ready() -> void:
 	get_tree().auto_accept_quit = false
 	var restore_result := Filesys.restore_pending_runtime_if_needed(true)
-	if(!restore_result.ok):
-		alert(restore_result.message)
+	if(!restore_result.ok): alert(restore_result.message);
 
 func _notification(what: int) -> void:
 	if(what == NOTIFICATION_WM_CLOSE_REQUEST):

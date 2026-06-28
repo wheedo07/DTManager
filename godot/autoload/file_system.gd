@@ -12,22 +12,28 @@ var GamePath: String
 var ModPath: String
 var RunPath: String
 var PatcherPath: String
+var FilesPath: String
+var SavePath: String
 var VersionPath: String
 var RuntimeStatePath: String
 var AppConfigPath: String
 
 func _init() -> void:
 	var base_dir := get_root_path()
+	FilesPath = base_dir.path_join("Files")
 	GamePath = base_dir.path_join("Game")
 	ModPath = base_dir.path_join("Mod")
 	RunPath = base_dir.path_join("Run")
 	PatcherPath = base_dir.path_join("Patcher")
-	VersionPath = base_dir.path_join("GameVersions")
+	SavePath = FilesPath.path_join("GameSave")
+	VersionPath = FilesPath.path_join("GameVersions")
 	RuntimeStatePath = base_dir.path_join(RUNTIME_STATE_NAME)
 	AppConfigPath = base_dir.path_join(APP_CONFIG_NAME)
+	ensure_directory(FilesPath)
 	ensure_directory(GamePath)
 	ensure_directory(ModPath)
 	ensure_directory(RunPath)
+	ensure_directory(SavePath)
 	ensure_directory(VersionPath)
 
 func get_game_thumbnail_path(g_name: String) -> String:
@@ -40,6 +46,16 @@ func get_root_path() -> String:
 	if(OS.has_feature("editor")):
 		return ProjectSettings.globalize_path("res://../output")
 	return OS.get_executable_path().get_base_dir()
+
+func _apply_default_game_config(config: Dictionary, app_id: String) -> void:
+	if(app_id.is_empty()): return;
+	var defaults_result := _load_default_game_database()
+	if(!defaults_result.ok): return;
+	if(typeof(defaults_result.data.get(app_id, null)) != TYPE_DICTIONARY): return;
+	var defaults: Dictionary = defaults_result.data.get(app_id, {})
+	for key in defaults.keys():
+		if(key in ["name", "run_path", "steam_uri", "steam_game_path"]): continue;
+		config[str(key)] = defaults[key];
 
 func addGame(path: String, g_name: String) -> Util.Stats:
 	if(g_name.strip_edges().is_empty()):
@@ -63,11 +79,14 @@ func addGame(path: String, g_name: String) -> Util.Stats:
 	var config := {
 		"name": g_name,
 		"run_path": run_path,
+		"save_path": "",
 	}
 	var steam_info := Steam.detect_install(source_dir)
 	if(!steam_info.is_empty()):
 		config["steam_uri"] = str(steam_info.get("steam_uri", ""))
 		config["steam_game_path"] = str(steam_info.get("steam_game_path", ""))
+		var app_id := str(config["steam_uri"]).trim_prefix("steam://run/").strip_edges()
+		_apply_default_game_config(config, app_id)
 
 	var config_result := _write_json(game_dir.path_join(CONFIG_NAME), config)
 	if(!config_result.ok):
@@ -203,13 +222,11 @@ func list_games() -> Array[Dictionary]:
 func list_mods(g_name: String) -> Array[Dictionary]:
 	var mods: Array[Dictionary] = []
 	var game_mod_root := ModPath.path_join(g_name)
-	if(!DirAccess.dir_exists_absolute(game_mod_root)):
-		return mods
+	if(!DirAccess.dir_exists_absolute(game_mod_root)): return mods;
 
 	for mod_name in DirAccess.get_directories_at(game_mod_root):
 		var config_result := load_mod_config(g_name, mod_name)
-		if(config_result.ok):
-			mods.append(config_result.data)
+		if(config_result.ok): mods.append(config_result.data);
 	return mods
 
 func load_game_config(g_name: String) -> Util.Stats:
@@ -249,6 +266,82 @@ func save_mod_config(g_name: String, m_name: String, config: Dictionary) -> Util
 	if(!DirAccess.dir_exists_absolute(mod_dir)):
 		return Util.Stats.new(false, "error.mod_does_not_exist")
 	return _write_json(mod_dir.path_join(CONFIG_NAME), config)
+
+func get_game_save_root(g_name: String) -> String:
+	return SavePath.path_join(g_name)
+
+func get_game_save_slots_root(g_name: String) -> String:
+	return get_game_save_root(g_name).path_join("slots")
+
+func get_game_save_slot_dir(g_name: String, slot_name: String) -> String:
+	return get_game_save_slots_root(g_name).path_join(slot_name)
+
+func list_save_slots(g_name: String) -> Array[String]:
+	var slots_root := get_game_save_slots_root(g_name)
+	if(!DirAccess.dir_exists_absolute(slots_root)): return [];
+	var result: Array[String] = []
+	for slot_name in DirAccess.get_directories_at(slots_root):
+		result.append(slot_name)
+	result.sort()
+	return result
+
+func backup_save_slot(g_name: String, slot_name: String) -> Util.Stats:
+	if(g_name.strip_edges().is_empty()):
+		return Util.Stats.new(false, "error.game_name_empty")
+	if(slot_name.strip_edges().is_empty()):
+		return Util.Stats.new(false, "error.save_slot_name_empty")
+	var game_config_result := load_game_config(g_name)
+	if(!game_config_result.ok):
+		return game_config_result
+	var save_source_dir := str(game_config_result.data.get("save_path", "")).strip_edges()
+	if(save_source_dir.is_empty()):
+		return Util.Stats.new(false, "error.save_path_empty")
+	if(!DirAccess.dir_exists_absolute(save_source_dir)):
+		return Util.Stats.new(false, "error.save_directory_not_found")
+	var slot_dir := get_game_save_slot_dir(g_name, slot_name)
+	delete_directory_if_exists(slot_dir)
+	return copy_directory(save_source_dir, slot_dir)
+
+func restore_save_slot(g_name: String, slot_name: String) -> Util.Stats:
+	if(g_name.strip_edges().is_empty()):
+		return Util.Stats.new(false, "error.game_name_empty")
+	if(slot_name.strip_edges().is_empty()):
+		return Util.Stats.new(false, "error.save_slot_name_empty")
+	var game_config_result := load_game_config(g_name)
+	if(!game_config_result.ok):
+		return game_config_result
+	var save_target_dir := str(game_config_result.data.get("save_path", "")).strip_edges()
+	if(save_target_dir.is_empty()):
+		return Util.Stats.new(false, "error.save_path_empty")
+	var slot_dir := get_game_save_slot_dir(g_name, slot_name)
+	if(!DirAccess.dir_exists_absolute(slot_dir)):
+		return Util.Stats.new(false, "error.save_slot_not_found")
+	ensure_directory(save_target_dir)
+	delete_directory_contents(save_target_dir)
+	return copy_directory(slot_dir, save_target_dir)
+
+func export_save_slot(g_name: String, slot_name: String, destination_dir: String) -> Util.Stats:
+	if(destination_dir.strip_edges().is_empty()):
+		return Util.Stats.new(false, "error.export_directory_empty")
+	if(!DirAccess.dir_exists_absolute(destination_dir)):
+		return Util.Stats.new(false, "error.export_directory_not_found")
+	var slot_dir := get_game_save_slot_dir(g_name, slot_name)
+	if(!DirAccess.dir_exists_absolute(slot_dir)):
+		return Util.Stats.new(false, "error.save_slot_not_found")
+	var export_dir := destination_dir.path_join("%s_%s" % [g_name, slot_name])
+	delete_directory_if_exists(export_dir)
+	return copy_directory(slot_dir, export_dir)
+
+func import_save_slot(g_name: String, slot_name: String, source_dir: String) -> Util.Stats:
+	if(slot_name.strip_edges().is_empty()):
+		return Util.Stats.new(false, "error.save_slot_name_empty")
+	if(source_dir.strip_edges().is_empty()):
+		return Util.Stats.new(false, "error.import_directory_empty")
+	if(!DirAccess.dir_exists_absolute(source_dir)):
+		return Util.Stats.new(false, "error.import_directory_not_found")
+	var slot_dir := get_game_save_slot_dir(g_name, slot_name)
+	delete_directory_if_exists(slot_dir)
+	return copy_directory(source_dir, slot_dir)
 
 func save_thumbnail(target_path: String, image_path: String) -> Util.Stats:
 	if(image_path.strip_edges().is_empty()):
@@ -296,8 +389,7 @@ func restore_pending_runtime_if_needed(force_kill_running: bool = false) -> Util
 		return Util.Stats.new(true, "status.ok")
 
 	var state_result := load_runtime_state()
-	if(!state_result.ok):
-		return state_result
+	if(!state_result.ok): return state_result;
 
 	var steam_game_path := str(state_result.data.get("steam_game_path", ""))
 	var backup_dir := str(state_result.data.get("backup_dir", ""))
@@ -311,8 +403,7 @@ func restore_pending_runtime_if_needed(force_kill_running: bool = false) -> Util
 		return Util.Stats.new(false, "error.runtime_backup_not_found")
 	if(force_kill_running && phase == "launched" && !executable_name.is_empty()):
 		var kill_result := _kill_process_by_name(executable_name)
-		if(!kill_result.ok):
-			return kill_result
+		if(!kill_result.ok): return kill_result;
 		OS.delay_msec(RESTORE_DELAY_AFTER_KILL_MS)
 
 	delete_directory_contents(steam_game_path)
@@ -328,7 +419,6 @@ func copy_directory(source_dir: String, destination_dir: String) -> Util.Stats:
 
 func merge_directory(source_dir: String, destination_dir: String) -> Util.Stats:
 	return _copy_directory_internal(source_dir, destination_dir, true)
-
 
 func merge_directory_without_configs(source_dir: String, destination_dir: String) -> Util.Stats:
 	return _copy_directory_internal(source_dir, destination_dir, true, [CONFIG_NAME])
@@ -502,24 +592,20 @@ func _build_xdelta_mod(base_dir: String, extract_dir: String, patch_files: Array
 func _resolve_xdelta_target_relative(root_dir: String, relative_patch_path: String) -> String:
 	var relative_without_xdelta := relative_patch_path.substr(0, relative_patch_path.length() - ".xdelta".length())
 	var direct_target := root_dir.path_join(relative_without_xdelta)
-	if(FileAccess.file_exists(direct_target)):
-		return relative_without_xdelta
+	if(FileAccess.file_exists(direct_target)): return relative_without_xdelta;
 
 	var parent_relative := relative_without_xdelta.get_base_dir()
 	var parent_dir := root_dir if parent_relative == "." else root_dir.path_join(parent_relative)
-	if(!DirAccess.dir_exists_absolute(parent_dir)):
-		return ""
+	if(!DirAccess.dir_exists_absolute(parent_dir)): return "";
 
 	var basename := relative_without_xdelta.get_file()
 	var matched_file := _find_file_name_by_basename(parent_dir, basename)
-	if(matched_file.is_empty()):
-		return ""
+	if(matched_file.is_empty()): return "";
 	return matched_file if parent_relative == "." else parent_relative.path_join(matched_file)
 
 func _build_gddelta_mod(g_name: String, base_dir: String, extract_dir: String, patch_files: Array[String], mod_dir: String, m_name: String) -> Util.Stats:
 	var game_config := load_game_config(g_name)
-	if(!game_config.ok):
-		return game_config
+	if(!game_config.ok): return game_config;
 
 	var run_path := str(game_config.data.get("run_path", "")).trim_prefix("/").trim_prefix("\\")
 	if(run_path.is_empty()):
@@ -606,7 +692,6 @@ func _copy_directory_internal(source_dir: String, destination_dir: String, overw
 
 	return Util.Stats.new(true, "status.ok")
 
-
 func _copy_override_files(source_dir: String, destination_dir: String, excluded_extensions: Array[String], relative_path: String = "") -> Util.Stats:
 	var current_source_dir := source_dir if relative_path.is_empty() else source_dir.path_join(relative_path)
 	for directory_name in DirAccess.get_directories_at(current_source_dir):
@@ -645,8 +730,7 @@ func _copy_changed_files(base_dir: String, result_dir: String, destination_dir: 
 		var file_relative := file_name if relative_path.is_empty() else relative_path.path_join(file_name)
 		var result_file := result_dir.path_join(file_relative)
 		var base_file := base_dir.path_join(file_relative)
-		if(FileAccess.file_exists(base_file) && _files_match(base_file, result_file)):
-			continue
+		if(FileAccess.file_exists(base_file) && _files_match(base_file, result_file)): continue;
 		var destination_file := destination_dir.path_join(file_relative)
 		ensure_directory(destination_file.get_base_dir())
 		if(FileAccess.file_exists(destination_file)):
@@ -689,7 +773,6 @@ func _write_json(path: String, data: Dictionary) -> Util.Stats:
 	file.store_string(JSON.stringify(data, "\t"))
 	return Util.Stats.new(true, "status.ok")
 
-
 func _mod_config_data(g_name: String, m_name: String, metadata: Dictionary = {}) -> Dictionary:
 	var config := {
 		"name": m_name,
@@ -714,7 +797,6 @@ func delete_directory_if_exists(path: String) -> void:
 		delete_directory_if_exists(path.path_join(directory_name))
 	DirAccess.remove_absolute(path)
 
-
 func delete_directory_contents(path: String) -> void:
 	if(!_is_safe_directory_target(path)):
 		return
@@ -724,20 +806,16 @@ func delete_directory_contents(path: String) -> void:
 	for directory_name in DirAccess.get_directories_at(path):
 		delete_directory_if_exists(path.path_join(directory_name))
 
-
 func _relative_path(root: String, path: String) -> String:
 	var normalized_root := root.replace("\\", "/")
 	var normalized_path := path.replace("\\", "/")
 	return normalized_path.trim_prefix(normalized_root)
 
-
 func _game_dir(g_name: String) -> String:
 	return GamePath.path_join(g_name)
 
-
 func _mod_dir(g_name: String, m_name: String) -> String:
 	return ModPath.path_join(g_name).path_join(m_name)
-
 
 func temp_dir(name: String) -> String:
 	return ModPath.path_join(TEMP_PREFIX + name)
@@ -750,6 +828,9 @@ func _read_package_metadata(extract_dir: String) -> Dictionary:
 	if(!metadata_result.ok):
 		return {}
 	return metadata_result.data
+
+func _load_default_game_database() -> Util.Stats:
+	return Net.load_remote_database_json("DefaultGame.json")
 
 func _resolve_xdelta_path() -> String:
 	var path := PatcherPath.path_join("xdelta.exe");
@@ -802,8 +883,7 @@ func parse_url(url: String) -> Dictionary:
 	if(regex.compile("^https?://([^/:]+)(?::(\\d+))?(/.*)?$") != OK):
 		return {}
 	var match := regex.search(url)
-	if(match == null):
-		return {}
+	if(match == null): return {};
 	var https := url.begins_with("https://")
 	return {
 		"https": https,
@@ -812,20 +892,16 @@ func parse_url(url: String) -> Dictionary:
 		"path": "/" if match.get_string(3).is_empty() else match.get_string(3),
 	}
 
-
 func _find_file_name_by_basename(parent_dir: String, basename: String) -> String:
 	for file_name in DirAccess.get_files_at(parent_dir):
 		if(file_name.get_basename() == basename):
 			return file_name
-	return ""
-
+	return "";
 
 func _find_file_path_by_basename_recursive(root_dir: String, basename: String, extension: String = "") -> String:
 	for file_name in DirAccess.get_files_at(root_dir):
-		if(file_name.get_basename() != basename):
-			continue
-		if(!extension.is_empty() && !file_name.to_lower().ends_with(extension)):
-			continue
+		if(file_name.get_basename() != basename): continue;
+		if(!extension.is_empty() && !file_name.to_lower().ends_with(extension)): continue;
 		return root_dir.path_join(file_name)
 
 	for directory_name in DirAccess.get_directories_at(root_dir):
@@ -833,7 +909,7 @@ func _find_file_path_by_basename_recursive(root_dir: String, basename: String, e
 		if(!nested_result.is_empty()):
 			return nested_result
 
-	return ""
+	return "";
 
 func _kill_process_by_name(executable_name: String) -> Util.Stats:
 	var output: Array = []
@@ -846,8 +922,7 @@ func _kill_process_by_name(executable_name: String) -> Util.Stats:
 	return Util.Stats.new(true, "status.ok")
 
 func _is_process_running_by_name(executable_name: String) -> bool:
-	var output: Array = []
+	var output: Array = [];
 	var exit_code := OS.execute("cmd", ["/c", "tasklist", "/FI", "IMAGENAME eq " + executable_name], output, true, false)
-	if(exit_code != 0):
-		return false
+	if(exit_code != 0): return false;
 	return "\n".join(output).to_lower().contains(executable_name.to_lower())

@@ -124,11 +124,9 @@ func _refresh_preview_image(game_name: String, mod_name: String = "") -> void:
 	thumbnail_paths.append(Filesys.get_game_thumbnail_path(game_name))
 
 	for thumbnail_path in thumbnail_paths:
-		if(!FileAccess.file_exists(thumbnail_path)):
-			continue
+		if(!FileAccess.file_exists(thumbnail_path)): continue;
 		var image := Image.load_from_file(thumbnail_path)
-		if(image == null || image.is_empty()):
-			continue
+		if(image == null || image.is_empty()): continue;
 		preview_image.texture = ImageTexture.create_from_image(image);
 		preview_image.visible = true;
 		preview_title_label.visible = false;
@@ -147,7 +145,7 @@ func _show_text_preview(title: String, subtitle: String) -> void:
 
 func _rebuild_mod_list() -> void:
 	for child in mod_list.get_children():
-		child.queue_free()
+		child.queue_free();
 
 	for index in range(mods.size()):
 		var row := MOD_ROW_SCENE.instantiate()
@@ -298,7 +296,7 @@ func _on_settings_pressed() -> void:
 	if(!app_config_result.ok):
 		Global.alert(app_config_result.message);
 		return;
-	var item_config := {}
+	var item_config := {};
 	var is_mod := false
 	if(games.is_empty()):
 		game_settings_dialog.open_dialog(app_config_result.data, item_config, false);
@@ -376,7 +374,7 @@ func _on_game_created(game_name: String, executable_path: String) -> void:
 func _on_app_settings_saved(steam_username: String, steam_password: String) -> void:
 	_start_worker("app_settings", "Saving app settings...", Callable(self, "_thread_save_app_settings").bind(steam_username, steam_password))
 
-func _on_item_settings_saved(new_name: String, steam_game_path: String, thumbnail_path: String, is_mod: bool) -> void:
+func _on_item_settings_saved(new_name: String, steam_game_path: String, save_path: String, thumbnail_path: String, is_mod: bool) -> void:
 	if(games.is_empty()):
 		Global.alert(tr("error.no_game_selected"));
 		return;
@@ -388,7 +386,7 @@ func _on_item_settings_saved(new_name: String, steam_game_path: String, thumbnai
 		var mod_name := str(_selected_mod().get("name", ""));
 		_start_worker("settings", "Saving settings...", Callable(self, "_thread_save_mod_settings").bind(game_name, mod_name, new_name, thumbnail_path), {"game_name": game_name, "mod_name": new_name})
 		return
-	_start_worker("settings", "Saving settings...", Callable(self, "_thread_save_game_settings").bind(game_name, new_name, steam_game_path, thumbnail_path), {"game_name": new_name})
+	_start_worker("settings", "Saving settings...", Callable(self, "_thread_save_game_settings").bind(game_name, new_name, steam_game_path, save_path, thumbnail_path), {"game_name": new_name})
 
 func _on_mod_created(mod_name: String, source_path: String) -> void:
 	if(games.is_empty()):
@@ -442,7 +440,7 @@ func _thread_delete_game(game_name: String) -> Dictionary:
 func _thread_delete_mod(game_name: String, mod_name: String) -> Dictionary:
 	return Filesys.delete_mod(game_name, mod_name).to_dict();
 
-func _thread_save_game_settings(old_name: String, new_name: String, steam_game_path: String, thumbnail_path: String) -> Dictionary:
+func _thread_save_game_settings(old_name: String, new_name: String, steam_game_path: String, save_path: String, thumbnail_path: String) -> Dictionary:
 	var target_name := old_name
 	if(old_name != new_name):
 		var rename_result := Filesys.rename_game(old_name, new_name)
@@ -454,6 +452,7 @@ func _thread_save_game_settings(old_name: String, new_name: String, steam_game_p
 		return config_result.to_dict()
 	var config := config_result.data.duplicate(true)
 	config["name"] = target_name
+	config["save_path"] = save_path.strip_edges()
 	config.erase("steam_uri")
 	config.erase("steam_game_path")
 	if(!steam_game_path.is_empty()):

@@ -6,16 +6,14 @@ func prepare_and_launch(game_name: String, mod_name: String) -> Util.Stats:
 		return Util.Stats.new(false, "error.game_name_empty")
 
 	var game_config := Filesys.load_game_config(game_name)
-	if(!game_config.ok):
-		return game_config
+	if(!game_config.ok): return game_config;
 
 	var run_path := str(game_config.data.get("run_path", "")).trim_prefix("/").trim_prefix("\\")
 	if(run_path.is_empty()):
 		return Util.Stats.new(false, "error.game_run_path_empty")
 
 	var base_dir_result := Filesys.resolve_game_base_dir(game_name, mod_name)
-	if(!base_dir_result.ok):
-		return base_dir_result
+	if(!base_dir_result.ok): return base_dir_result;
 	var game_dir := str(base_dir_result.data.get("base_dir", Filesys.GamePath.path_join(game_name)))
 	var run_dir := Filesys.RunPath
 	Filesys.clear_run_directory()
@@ -31,7 +29,6 @@ func prepare_and_launch(game_name: String, mod_name: String) -> Util.Stats:
 		build_result = Filesys.copy_directory(game_dir, run_dir)
 		if(build_result.ok):
 			build_result = Filesys.merge_directory_without_configs(mod_dir, run_dir)
-
 	if(!build_result.ok): return build_result;
 
 	var executable_path := run_dir.path_join(run_path)
@@ -100,8 +97,7 @@ func _launch_with_steam(game_dir: String, run_dir: String, executable_path: Stri
 		return Util.Stats.new(false, "error.failed_to_launch_steam")
 
 	var wait_result := _wait_for_process_exit(executable_path.get_file())
-	if(!wait_result.ok):
-		return wait_result
+	if(!wait_result.ok): return wait_result;
 
 	Global.begin_close_block(Util.trans("error.close_blocked_while_updating_steam_files"))
 	var restore_result := _restore_steam_backup(steam_game_path, backup_dir)

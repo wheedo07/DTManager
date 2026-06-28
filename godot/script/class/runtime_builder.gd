@@ -92,7 +92,7 @@ func _launch_with_steam(game_dir: String, run_dir: String, executable_path: Stri
 		return state_result
 	Global.end_close_block()
 
-	var launch_ok := Global.open_target(steam_uri)
+	var launch_ok := Global.open_path(steam_uri)
 	if(!launch_ok):
 		Global.begin_close_block(Util.trans("error.close_blocked_while_updating_steam_files"))
 		_restore_steam_backup(steam_game_path, backup_dir)

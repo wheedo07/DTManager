@@ -350,11 +350,11 @@ func _open_selected_folder() -> void:
 		return;
 
 	if(!_has_selected_mod()):
-		Global.open_directory(Filesys.GamePath.path_join(str(_selected_game().get("name", ""))));
+		Global.open_path(Filesys.GamePath.path_join(str(_selected_game().get("name", ""))));
 		return;
 
 	var mod_path := Filesys.ModPath.path_join(str(_selected_game().get("name", ""))).path_join(str(_selected_mod().get("name", "")));
-	Global.open_directory(mod_path);
+	Global.open_path(mod_path);
 
 func _delete_selected_item() -> void:
 	if(games.is_empty()):

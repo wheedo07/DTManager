@@ -36,15 +36,5 @@ func end_close_block() -> void:
 func alert(message: String) -> void:
 	OS.alert(message, APP_TITLE);
 
-func open_directory(path: String) -> bool:
+func open_path(path: String) -> bool:
 	return OS.shell_open(ProjectSettings.globalize_path(path)) == OK
-
-func open_target(target: String) -> bool:
-	var output: Array = []
-	var exit_code := OS.execute("cmd.exe", PackedStringArray([
-		"/c",
-		"start",
-		"",
-		target,
-	]), output, false, false)
-	return exit_code == OK

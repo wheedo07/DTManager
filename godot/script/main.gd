@@ -22,11 +22,11 @@ const MOD_ROW_SCENE := preload("res://scenes/mod_row.tscn");
 @onready var open_folder_button: Button = %OpenFolderButton
 @onready var save_button: Button = %SaveButton
 @onready var delete_button: Button = %DeleteButton
-@onready var add_game_dialog: PopupPanel = %AddGameDialog
-@onready var add_mod_dialog: PopupPanel = %AddModDialog
-@onready var game_settings_dialog: PopupPanel = %GameSettingsDialog
+@onready var add_game_dialog: Control = %AddGameDialog
+@onready var add_mod_dialog: Control = %AddModDialog
+@onready var game_settings_dialog: Control = %GameSettingsDialog
 @onready var save_dialog = %SaveDialog
-@onready var delete_confirm_dialog: PopupPanel = %DeleteConfirmDialog
+@onready var delete_confirm_dialog: Control = %DeleteConfirmDialog
 @onready var delete_confirm_label: Label = %DeleteConfirmLabel
 @onready var loading_overlay: Control = %LoadingOverlay
 @onready var loading_label: Label = %LoadingLabel
@@ -383,7 +383,7 @@ func _open_delete_confirm(action: String, meta: Dictionary) -> void:
 			delete_confirm_label.text = tr("ui.delete.confirm_save") % str(meta.get("slot_name", ""))
 		_:
 			delete_confirm_label.text = tr("ui.delete.confirm_game") % str(meta.get("game_name", ""))
-	delete_confirm_dialog.popup_centered()
+	_show_control_centered(delete_confirm_dialog)
 
 func _on_delete_confirmed() -> void:
 	delete_confirm_dialog.hide()
@@ -396,6 +396,10 @@ func _on_delete_confirmed() -> void:
 			_start_worker("save_delete", "Deleting save...", Callable(self, "_thread_delete_save").bind(str(pending_delete_meta.get("game_name", "")), str(pending_delete_meta.get("slot_name", ""))))
 	pending_delete_action = ""
 	pending_delete_meta = {}
+
+func _show_control_centered(control: Control) -> void:
+	control.show()
+	control.position = (get_viewport_rect().size - control.size) * 0.5
 
 func _open_save_dialog() -> void:
 	if(games.is_empty()):

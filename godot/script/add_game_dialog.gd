@@ -1,4 +1,4 @@
-extends PopupPanel
+extends PanelContainer
 
 signal game_created(game_name: String, executable_path: String)
 
@@ -15,12 +15,8 @@ func open_dialog() -> void:
 	title_label.text = tr("ui.dialog.add_game")
 	game_name_edit.text = ""
 	game_exe_edit.text = ""
-	popup_centered()
+	_show_centered()
 	game_name_edit.grab_focus()
-
-func _notification(what: int) -> void:
-	if(what != NOTIFICATION_WM_WINDOW_FOCUS_OUT || !visible || picker_active || game_exe_dialog.visible): return;
-	hide()
 
 func _on_browse_pressed() -> void:
 	picker_active = true
@@ -37,6 +33,10 @@ func _on_picker_canceled() -> void:
 
 func _finish_picker_interaction() -> void:
 	picker_active = false
+
+func _show_centered() -> void:
+	show()
+	position = (get_viewport_rect().size - size) * 0.5
 
 func _on_confirmed() -> void:
 	var game_name := game_name_edit.text.strip_edges()

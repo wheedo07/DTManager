@@ -3,9 +3,8 @@
 [ext_resource type="Script" uid="uid://dyr010tq1o4gy" path="res://script/save_dialog.gd" id="1_script"]
 [ext_resource type="Theme" uid="uid://bl76nfqlr3omk" path="res://Themes/main_theme.tres" id="2_theme"]
 
-[node name="SaveDialog" type="PopupPanel" unique_id=1397527411]
+[node name="SaveDialog" type="PanelContainer" unique_id=1397527411]
 oversampling_override = 1.0
-initial_position = 2
 size = Vector2i(518, 450)
 visible = true
 theme = ExtResource("2_theme")

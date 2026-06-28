@@ -1,4 +1,4 @@
-extends PopupPanel
+extends PanelContainer
 
 signal mod_created(mod_name: String, source_path: String)
 
@@ -15,12 +15,8 @@ func open_dialog(base_mod_name: String = "") -> void:
 	mod_name_edit.text = ""
 	mod_source_edit.text = ""
 	title_label.text = tr("ui.dialog.add_mod") if base_mod_name.is_empty() else "Patch %s" % base_mod_name
-	popup_centered()
+	_show_centered()
 	mod_name_edit.grab_focus()
-
-func _notification(what: int) -> void:
-	if(what != NOTIFICATION_WM_WINDOW_FOCUS_OUT || !visible || picker_active || mod_source_dialog.visible): return;
-	hide()
 
 func _on_browse_pressed() -> void:
 	picker_active = true
@@ -37,6 +33,10 @@ func _on_picker_canceled() -> void:
 
 func _finish_picker_interaction() -> void:
 	picker_active = false
+
+func _show_centered() -> void:
+	show()
+	position = (get_viewport_rect().size - size) * 0.5
 
 func _on_confirmed() -> void:
 	var mod_name := mod_name_edit.text.strip_edges()

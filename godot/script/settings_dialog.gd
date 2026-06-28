@@ -1,4 +1,4 @@
-extends PopupPanel
+extends PanelContainer
 
 signal app_settings_saved(steam_username: String, steam_password: String)
 signal item_settings_saved(name_value: String, steam_game_path: String, save_path: String, thumbnail_path: String, use_steam_launch: bool, is_mod: bool)
@@ -59,16 +59,11 @@ func open_dialog(app_config: Dictionary, item_config: Dictionary = {}, is_mod: b
 	tabs.set_tab_title(1, tr("ui.settings.item_tab"))
 	tabs.set_tab_hidden(1, !has_item_settings)
 	tabs.current_tab = 0 if !has_item_settings else 1
-	popup_centered()
+	_show_centered()
 	if(tabs.current_tab == 0):
 		steam_username_edit.grab_focus()
 	else:
 		game_name_edit.grab_focus()
-
-func _notification(what: int) -> void:
-	if(what != NOTIFICATION_WM_WINDOW_FOCUS_OUT || !visible): return;
-	if(picker_active || folder_dialog.visible || save_folder_dialog.visible || thumbnail_dialog.visible): return;
-	hide()
 
 func _on_browse_pressed() -> void:
 	picker_active = true
@@ -99,6 +94,10 @@ func _on_picker_canceled() -> void:
 
 func _finish_picker_interaction() -> void:
 	picker_active = false
+
+func _show_centered() -> void:
+	show()
+	position = (get_viewport_rect().size - size) * 0.5
 
 func _on_steam_login_button_pressed() -> void:
 	steam_login_requested.emit(steam_username_edit.text.strip_edges(), steam_password_edit.text)

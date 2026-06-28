@@ -330,37 +330,40 @@ alignment = 0
 [node name="AddGameDialog" parent="." unique_id=1701378520 instance=ExtResource("3_dialog")]
 unique_name_in_owner = true
 visible = false
+layout_mode = 0
+offset_right = 620.0
+offset_bottom = 304.0
 
 [node name="AddModDialog" parent="." unique_id=1521004064 instance=ExtResource("4_mod_dialog")]
 unique_name_in_owner = true
 visible = false
+layout_mode = 0
+offset_right = 620.0
+offset_bottom = 304.0
 
 [node name="GameSettingsDialog" parent="." unique_id=302064808 instance=ExtResource("5_settings_dialog")]
 unique_name_in_owner = true
 visible = false
+layout_mode = 0
+offset_right = 784.0
+offset_bottom = 517.0
 
 [node name="SaveDialog" parent="." unique_id=497443820 instance=ExtResource("6_save_dialog")]
 unique_name_in_owner = true
 visible = false
+layout_mode = 0
+offset_right = 518.0
+offset_bottom = 450.0
 
-[node name="DeleteConfirmDialog" type="PopupPanel" parent="." unique_id=1739442004]
+[node name="DeleteConfirmDialog" type="PanelContainer" parent="." unique_id=1739442004]
 unique_name_in_owner = true
-oversampling_override = 1.0
-initial_position = 2
-size = Vector2i(450, 150)
-min_size = Vector2i(450, 150)
-max_size = Vector2i(450, 150)
+visible = false
+layout_mode = 0
+offset_right = 450.0
+offset_bottom = 150.0
 
 [node name="Margin" type="MarginContainer" parent="DeleteConfirmDialog" unique_id=1764202001]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 3.0
-offset_top = 3.0
-offset_right = -3.0
-offset_bottom = -3.0
-grow_horizontal = 2
-grow_vertical = 2
+layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12

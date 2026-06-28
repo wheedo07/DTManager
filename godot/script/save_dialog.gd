@@ -1,4 +1,4 @@
-extends PopupPanel
+extends PanelContainer
 
 const SAVE_SLOT_ROW_SCENE := preload("res://scenes/save_slot_row.tscn")
 
@@ -41,18 +41,13 @@ func open_dialog(game_name: String, save_path: String, slots: Array[String]) -> 
 	save_path_label.text = save_path
 	_set_slots(slots)
 	_hide_rename()
-	popup_centered()
+	_show_centered()
 
 func refresh_slots(slots: Array[String]) -> void:
 	_set_slots(slots, selected_slot_name)
 
 func get_selected_slot_name() -> String:
 	return selected_slot_name
-
-func _notification(what: int) -> void:
-	if(what != NOTIFICATION_WM_WINDOW_FOCUS_OUT || !visible): return;
-	if(picker_active || context_menu.visible || import_zip_dialog.visible || export_zip_dialog.visible): return;
-	hide()
 
 func _set_slots(slots: Array[String], selected_slot: String = "") -> void:
 	current_slots = slots.duplicate()
@@ -168,6 +163,10 @@ func _on_picker_canceled() -> void:
 
 func _finish_picker_interaction() -> void:
 	picker_active = false
+
+func _show_centered() -> void:
+	show()
+	position = (get_viewport_rect().size - size) * 0.5
 
 func _on_rename_submitted(new_name: String) -> void:
 	if(editing_slot_name.is_empty()):

@@ -1,7 +1,7 @@
 extends PopupPanel
 
 signal app_settings_saved(steam_username: String, steam_password: String)
-signal item_settings_saved(name_value: String, steam_game_path: String, save_path: String, thumbnail_path: String, is_mod: bool)
+signal item_settings_saved(name_value: String, steam_game_path: String, save_path: String, thumbnail_path: String, use_steam_launch: bool, is_mod: bool)
 signal maintenance_requested(action: String)
 signal steam_login_requested(steam_username: String, steam_password: String)
 
@@ -14,6 +14,7 @@ signal steam_login_requested(steam_username: String, steam_password: String)
 @onready var steam_game_path_label: Label = %SteamGamePathLabel
 @onready var steam_game_path_row: HBoxContainer = %SteamGamePathRow
 @onready var steam_game_path_edit: LineEdit = %SteamGamePathEdit
+@onready var use_steam_launch_check_box: CheckBox = %UseSteamLaunchCheckBox
 @onready var save_path_label: Label = %SavePathLabel
 @onready var save_path_row: HBoxContainer = %SavePathRow
 @onready var save_path_edit: LineEdit = %SavePathEdit
@@ -43,12 +44,14 @@ func open_dialog(app_config: Dictionary, item_config: Dictionary = {}, is_mod: b
 	game_name_label.text = tr("ui.common.mod_name") if is_mod else tr("ui.common.game_name")
 	game_name_edit.text = str(item_config.get("name", ""))
 	steam_game_path_edit.text = str(item_config.get("steam_game_path", ""))
+	use_steam_launch_check_box.button_pressed = bool(item_config.get("use_steam_launch", !str(item_config.get("steam_uri", "")).is_empty() && !str(item_config.get("steam_game_path", "")).is_empty()))
 	save_path_edit.text = str(item_config.get("save_path", ""))
 	steam_username_edit.text = str(app_config.get("steam_username", ""))
 	steam_password_edit.text = str(app_config.get("steam_password", ""))
 	selected_thumbnail_path = ""
 	steam_game_path_label.visible = !is_mod && has_item_settings
 	steam_game_path_row.visible = !is_mod && has_item_settings
+	use_steam_launch_check_box.visible = !is_mod && has_item_settings
 	save_path_label.visible = !is_mod && has_item_settings
 	save_path_row.visible = !is_mod && has_item_settings
 	tabs.set_tab_title(0, tr("ui.settings.app_tab"))
@@ -100,7 +103,9 @@ func _on_confirmed() -> void:
 		return
 	var steam_game_path := ""
 	var save_path := ""
+	var use_steam_launch := false
 	if(!current_is_mod):
 		steam_game_path = steam_game_path_edit.text.strip_edges()
 		save_path = save_path_edit.text.strip_edges()
-	item_settings_saved.emit(game_name, steam_game_path, save_path, selected_thumbnail_path.strip_edges(), current_is_mod)
+		use_steam_launch = use_steam_launch_check_box.button_pressed
+	item_settings_saved.emit(game_name, steam_game_path, save_path, selected_thumbnail_path.strip_edges(), use_steam_launch, current_is_mod)

@@ -13,6 +13,8 @@ ui.dialog.save_slots,Save Slots,세이브 슬롯
 ui.dialog.open_file,Open a File,파일 열기
 ui.dialog.open_directory,Open a Directory,폴더 열기
 ui.common.create,Create,생성
+ui.common.cancel,Cancel,취소
+ui.common.delete,Delete,삭제
 ui.common.save,Save,저장
 ui.common.game_name,Game Name,게임 이름
 ui.common.mod_name,Mod Name,모드 이름
@@ -29,6 +31,7 @@ ui.settings.steam_login,Steam Login,스팀 로그인
 ui.settings.download_patchers,Download Patchers,패처 다운로드
 ui.settings.name_placeholder,Name,이름
 ui.settings.steam_game_folder,Steam Game Folder,스팀 게임 폴더
+ui.settings.use_steam_launch,Launch Through Steam,스팀으로 실행
 ui.settings.save_folder,Save Folder,세이브 폴더
 ui.settings.browse,Browse,찾아보기
 ui.settings.thumbnail_image,Thumbnail Image,썸네일 이미지
@@ -44,6 +47,9 @@ ui.save.rename_selected,Rename Selected,선택 슬롯 이름 변경
 ui.save.delete_selected,Delete Selected,선택 슬롯 삭제
 ui.save.backup_current,Backup Current,현재 세이브 백업
 ui.save.restore_selected,Use Selected,선택 슬롯 적용
+ui.delete.confirm_game,"Delete game '%s'?","'%s' 게임을 삭제할까요?"
+ui.delete.confirm_mod,"Delete mod '%s'?","'%s' 모드를 삭제할까요?"
+ui.delete.confirm_save,"Delete save slot '%s'?","'%s' 세이브 슬롯을 삭제할까요?"
 error.game_name_empty,Game name is empty.,게임 이름이 비어 있습니다.
 error.executable_path_empty,Executable path is empty.,실행 파일 경로가 비어 있습니다.
 error.mod_name_empty,Mod name is empty.,모드 이름이 비어 있습니다.

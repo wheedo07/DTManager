@@ -37,7 +37,8 @@ func prepare_and_launch(game_name: String, mod_name: String) -> Util.Stats:
 
 	var steam_uri := str(game_config.data.get("steam_uri", "")).strip_edges()
 	var steam_game_path := str(game_config.data.get("steam_game_path", "")).strip_edges()
-	if(!steam_uri.is_empty() || !steam_game_path.is_empty()):
+	var use_steam_launch := bool(game_config.data.get("use_steam_launch", !steam_uri.is_empty() && !steam_game_path.is_empty()))
+	if(use_steam_launch && (!steam_uri.is_empty() || !steam_game_path.is_empty())):
 		return _launch_with_steam(game_dir, run_dir, executable_path, steam_uri, steam_game_path)
 
 	var pid := OS.create_process(executable_path, PackedStringArray(), false)

@@ -26,6 +26,8 @@ const MOD_ROW_SCENE := preload("res://scenes/mod_row.tscn");
 @onready var add_mod_dialog: PopupPanel = %AddModDialog
 @onready var game_settings_dialog: PopupPanel = %GameSettingsDialog
 @onready var save_dialog = %SaveDialog
+@onready var delete_confirm_dialog: PopupPanel = %DeleteConfirmDialog
+@onready var delete_confirm_label: Label = %DeleteConfirmLabel
 @onready var loading_overlay: Control = %LoadingOverlay
 @onready var loading_label: Label = %LoadingLabel
 
@@ -37,6 +39,8 @@ var worker_thread: Thread
 var worker_action := ""
 var worker_meta: Dictionary = {}
 var loading_active := false
+var pending_delete_action := ""
+var pending_delete_meta: Dictionary = {}
 
 func _ready() -> void:
 	version_label.text = "v%s (Beta)" % ProjectSettings.get_setting("application/config/version");
@@ -356,13 +360,42 @@ func _delete_selected_item() -> void:
 		return;
 
 	if(mods.is_empty()):
-		_start_worker("delete", "Deleting game...", Callable(self, "_thread_delete_game").bind(str(_selected_game().get("name", ""))));
+		_open_delete_confirm("game", {
+			"game_name": str(_selected_game().get("name", "")),
+		})
 		return;
 	if(!_has_selected_mod()):
 		Global.alert(tr("error.select_mod_to_delete"));
 		return;
 
-	_start_worker("delete", "Deleting mod...", Callable(self, "_thread_delete_mod").bind(str(_selected_game().get("name", "")), str(_selected_mod().get("name", ""))));
+	_open_delete_confirm("mod", {
+		"game_name": str(_selected_game().get("name", "")),
+		"mod_name": str(_selected_mod().get("name", "")),
+	})
+
+func _open_delete_confirm(action: String, meta: Dictionary) -> void:
+	pending_delete_action = action
+	pending_delete_meta = meta.duplicate(true)
+	match action:
+		"mod":
+			delete_confirm_label.text = tr("ui.delete.confirm_mod") % str(meta.get("mod_name", ""))
+		"save":
+			delete_confirm_label.text = tr("ui.delete.confirm_save") % str(meta.get("slot_name", ""))
+		_:
+			delete_confirm_label.text = tr("ui.delete.confirm_game") % str(meta.get("game_name", ""))
+	delete_confirm_dialog.popup_centered()
+
+func _on_delete_confirmed() -> void:
+	delete_confirm_dialog.hide()
+	match pending_delete_action:
+		"game":
+			_start_worker("delete", "Deleting game...", Callable(self, "_thread_delete_game").bind(str(pending_delete_meta.get("game_name", ""))))
+		"mod":
+			_start_worker("delete", "Deleting mod...", Callable(self, "_thread_delete_mod").bind(str(pending_delete_meta.get("game_name", "")), str(pending_delete_meta.get("mod_name", ""))))
+		"save":
+			_start_worker("save_delete", "Deleting save...", Callable(self, "_thread_delete_save").bind(str(pending_delete_meta.get("game_name", "")), str(pending_delete_meta.get("slot_name", ""))))
+	pending_delete_action = ""
+	pending_delete_meta = {}
 
 func _open_save_dialog() -> void:
 	if(games.is_empty()):
@@ -391,7 +424,7 @@ func _on_game_created(game_name: String, executable_path: String) -> void:
 func _on_app_settings_saved(steam_username: String, steam_password: String) -> void:
 	_start_worker("app_settings", "Saving app settings...", Callable(self, "_thread_save_app_settings").bind(steam_username, steam_password))
 
-func _on_item_settings_saved(new_name: String, steam_game_path: String, save_path: String, thumbnail_path: String, is_mod: bool) -> void:
+func _on_item_settings_saved(new_name: String, steam_game_path: String, save_path: String, thumbnail_path: String, use_steam_launch: bool, is_mod: bool) -> void:
 	if(games.is_empty()):
 		Global.alert(tr("error.no_game_selected"));
 		return;
@@ -403,7 +436,7 @@ func _on_item_settings_saved(new_name: String, steam_game_path: String, save_pat
 		var mod_name := str(_selected_mod().get("name", ""));
 		_start_worker("settings", "Saving settings...", Callable(self, "_thread_save_mod_settings").bind(game_name, mod_name, new_name, thumbnail_path), {"game_name": game_name, "mod_name": new_name})
 		return
-	_start_worker("settings", "Saving settings...", Callable(self, "_thread_save_game_settings").bind(game_name, new_name, steam_game_path, save_path, thumbnail_path), {"game_name": new_name})
+	_start_worker("settings", "Saving settings...", Callable(self, "_thread_save_game_settings").bind(game_name, new_name, steam_game_path, save_path, thumbnail_path, use_steam_launch), {"game_name": new_name})
 
 func _on_mod_created(mod_name: String, source_path: String) -> void:
 	if(games.is_empty()):
@@ -442,7 +475,10 @@ func _on_save_rename_requested(game_name: String, old_name: String, new_name: St
 
 func _on_save_delete_requested(game_name: String, slot_name: String) -> void:
 	if(loading_active): return;
-	_start_worker("save_delete", "Deleting save...", Callable(self, "_thread_delete_save").bind(game_name, slot_name))
+	_open_delete_confirm("save", {
+		"game_name": game_name,
+		"slot_name": slot_name,
+	})
 
 func _on_save_import_zip_requested(game_name: String, slot_name: String, zip_path: String) -> void:
 	if(loading_active): return;
@@ -499,7 +535,7 @@ func _thread_delete_game(game_name: String) -> Dictionary:
 func _thread_delete_mod(game_name: String, mod_name: String) -> Dictionary:
 	return Filesys.delete_mod(game_name, mod_name).to_dict();
 
-func _thread_save_game_settings(old_name: String, new_name: String, steam_game_path: String, save_path: String, thumbnail_path: String) -> Dictionary:
+func _thread_save_game_settings(old_name: String, new_name: String, steam_game_path: String, save_path: String, thumbnail_path: String, use_steam_launch: bool) -> Dictionary:
 	var target_name := old_name
 	if(old_name != new_name):
 		var rename_result := Filesys.rename_game(old_name, new_name)
@@ -512,6 +548,7 @@ func _thread_save_game_settings(old_name: String, new_name: String, steam_game_p
 	var config := config_result.data.duplicate(true)
 	config["name"] = target_name
 	config["save_path"] = save_path.strip_edges()
+	config["use_steam_launch"] = use_steam_launch
 	config.erase("steam_uri")
 	config.erase("steam_game_path")
 	if(!steam_game_path.is_empty()):

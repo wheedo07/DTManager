@@ -3,9 +3,20 @@
 [ext_resource type="Theme" uid="uid://bl76nfqlr3omk" path="res://Themes/main_theme.tres" id="1_theme"]
 [ext_resource type="Script" uid="uid://bgij6m1wuvr8q" path="res://script/settings_dialog.gd" id="2_script"]
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8cjo3"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ybks7"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_o2ta1"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_jg5j1"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_2f3ak"]
+
 [node name="GameSettingsDialog" type="PopupPanel" unique_id=1600996954]
 oversampling_override = 1.0
-size = Vector2i(695, 451)
+initial_position = 2
+size = Vector2i(784, 517)
 visible = true
 theme = ExtResource("1_theme")
 script = ExtResource("2_script")
@@ -122,6 +133,17 @@ text = "ui.settings.steam_game_folder"
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 8
+
+[node name="UseSteamLaunchCheckBox" type="CheckBox" parent="Margin/Root/Tabs/ItemSection/SteamGamePathRow" unique_id=1511777448]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxEmpty_8cjo3")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_ybks7")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_o2ta1")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_jg5j1")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_2f3ak")
+text = "ui.settings.use_steam_launch"
 
 [node name="SteamGamePathEdit" type="LineEdit" parent="Margin/Root/Tabs/ItemSection/SteamGamePathRow" unique_id=532745642]
 unique_name_in_owner = true

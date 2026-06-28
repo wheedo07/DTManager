@@ -343,6 +343,57 @@ visible = false
 unique_name_in_owner = true
 visible = false
 
+[node name="DeleteConfirmDialog" type="PopupPanel" parent="." unique_id=1739442004]
+unique_name_in_owner = true
+oversampling_override = 1.0
+initial_position = 2
+size = Vector2i(360, 144)
+visible = false
+
+[node name="Margin" type="MarginContainer" parent="DeleteConfirmDialog" unique_id=1764202001]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 3.0
+offset_top = 3.0
+offset_right = -3.0
+offset_bottom = -3.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="DeleteConfirmDialog/Margin" unique_id=1764202002]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TitleLabel" type="Label" parent="DeleteConfirmDialog/Margin/VBox" unique_id=1764202003]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "ui.common.delete"
+
+[node name="DeleteConfirmLabel" type="Label" parent="DeleteConfirmDialog/Margin/VBox" unique_id=1764202004]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+text = "ui.delete.confirm_game"
+autowrap_mode = 2
+
+[node name="ActionsRow" type="HBoxContainer" parent="DeleteConfirmDialog/Margin/VBox" unique_id=1764202005]
+layout_mode = 2
+alignment = 2
+theme_override_constants/separation = 8
+
+[node name="CancelButton" type="Button" parent="DeleteConfirmDialog/Margin/VBox/ActionsRow" unique_id=1764202006]
+layout_mode = 2
+text = "ui.common.cancel"
+
+[node name="ConfirmButton" type="Button" parent="DeleteConfirmDialog/Margin/VBox/ActionsRow" unique_id=1764202007]
+layout_mode = 2
+text = "ui.common.delete"
+
 [node name="LoadingOverlay" type="Control" parent="." unique_id=198623450]
 unique_name_in_owner = true
 visible = false
@@ -389,36 +440,36 @@ theme_override_font_sizes/font_size = 28
 text = "ui.main.loading"
 horizontal_alignment = 1
 
-[connection signal="pressed" from="Margin/Root/GameBar/PrevGameButton" to="." method="_on_prev_game_pressed"]
 [connection signal="mouse_entered" from="Margin/Root/GameBar/PrevGameButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/GameBar/PrevGameButton"), true]]
 [connection signal="mouse_exited" from="Margin/Root/GameBar/PrevGameButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/GameBar/PrevGameButton"), false]]
-[connection signal="pressed" from="Margin/Root/GameBar/NextGameButton" to="." method="_on_next_game_pressed"]
+[connection signal="pressed" from="Margin/Root/GameBar/PrevGameButton" to="." method="_on_prev_game_pressed"]
 [connection signal="mouse_entered" from="Margin/Root/GameBar/NextGameButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/GameBar/NextGameButton"), true]]
 [connection signal="mouse_exited" from="Margin/Root/GameBar/NextGameButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/GameBar/NextGameButton"), false]]
-[connection signal="pressed" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/AddModButton" to="." method="_on_add_mod_pressed"]
+[connection signal="pressed" from="Margin/Root/GameBar/NextGameButton" to="." method="_on_next_game_pressed"]
 [connection signal="mouse_entered" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/AddModButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/AddModButton"), true]]
 [connection signal="mouse_exited" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/AddModButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/AddModButton"), false]]
-[connection signal="pressed" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/AddGameButton" to="." method="_on_add_game_pressed"]
+[connection signal="pressed" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/AddModButton" to="." method="_on_add_mod_pressed"]
 [connection signal="mouse_entered" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/AddGameButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/AddGameButton"), true]]
 [connection signal="mouse_exited" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/AddGameButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/AddGameButton"), false]]
-[connection signal="pressed" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/RefreshButton" to="." method="_on_refresh_pressed"]
+[connection signal="pressed" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/AddGameButton" to="." method="_on_add_game_pressed"]
 [connection signal="mouse_entered" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/RefreshButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/RefreshButton"), true]]
 [connection signal="mouse_exited" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/RefreshButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/RefreshButton"), false]]
-[connection signal="pressed" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/SettingsButton" to="." method="_on_settings_pressed"]
+[connection signal="pressed" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/RefreshButton" to="." method="_on_refresh_pressed"]
 [connection signal="mouse_entered" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/SettingsButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/SettingsButton"), true]]
 [connection signal="mouse_exited" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/SettingsButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/SettingsButton"), false]]
-[connection signal="pressed" from="Margin/Root/Body/Content/DetailColumn/ActionList/PlayButton" to="." method="_on_play_button_pressed"]
+[connection signal="pressed" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/SettingsButton" to="." method="_on_settings_pressed"]
 [connection signal="mouse_entered" from="Margin/Root/Body/Content/DetailColumn/ActionList/PlayButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/Body/Content/DetailColumn/ActionList/PlayButton"), true]]
 [connection signal="mouse_exited" from="Margin/Root/Body/Content/DetailColumn/ActionList/PlayButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/Body/Content/DetailColumn/ActionList/PlayButton"), false]]
-[connection signal="pressed" from="Margin/Root/Body/Content/DetailColumn/ActionList/OpenFolderButton" to="." method="_on_open_folder_button_pressed"]
+[connection signal="pressed" from="Margin/Root/Body/Content/DetailColumn/ActionList/PlayButton" to="." method="_on_play_button_pressed"]
 [connection signal="mouse_entered" from="Margin/Root/Body/Content/DetailColumn/ActionList/OpenFolderButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/Body/Content/DetailColumn/ActionList/OpenFolderButton"), true]]
 [connection signal="mouse_exited" from="Margin/Root/Body/Content/DetailColumn/ActionList/OpenFolderButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/Body/Content/DetailColumn/ActionList/OpenFolderButton"), false]]
-[connection signal="pressed" from="Margin/Root/Body/Content/DetailColumn/ActionList/SaveButton" to="." method="_on_save_button_pressed"]
+[connection signal="pressed" from="Margin/Root/Body/Content/DetailColumn/ActionList/OpenFolderButton" to="." method="_on_open_folder_button_pressed"]
 [connection signal="mouse_entered" from="Margin/Root/Body/Content/DetailColumn/ActionList/SaveButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/Body/Content/DetailColumn/ActionList/SaveButton"), true]]
 [connection signal="mouse_exited" from="Margin/Root/Body/Content/DetailColumn/ActionList/SaveButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/Body/Content/DetailColumn/ActionList/SaveButton"), false]]
-[connection signal="pressed" from="Margin/Root/Body/Content/DetailColumn/ActionList/DeleteButton" to="." method="_on_delete_button_pressed"]
+[connection signal="pressed" from="Margin/Root/Body/Content/DetailColumn/ActionList/SaveButton" to="." method="_on_save_button_pressed"]
 [connection signal="mouse_entered" from="Margin/Root/Body/Content/DetailColumn/ActionList/DeleteButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/Body/Content/DetailColumn/ActionList/DeleteButton"), true]]
 [connection signal="mouse_exited" from="Margin/Root/Body/Content/DetailColumn/ActionList/DeleteButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/Body/Content/DetailColumn/ActionList/DeleteButton"), false]]
+[connection signal="pressed" from="Margin/Root/Body/Content/DetailColumn/ActionList/DeleteButton" to="." method="_on_delete_button_pressed"]
 [connection signal="game_created" from="AddGameDialog" to="." method="_on_game_created"]
 [connection signal="mod_created" from="AddModDialog" to="." method="_on_mod_created"]
 [connection signal="app_settings_saved" from="GameSettingsDialog" to="." method="_on_app_settings_saved"]
@@ -426,8 +477,10 @@ horizontal_alignment = 1
 [connection signal="maintenance_requested" from="GameSettingsDialog" to="." method="_on_maintenance_requested"]
 [connection signal="steam_login_requested" from="GameSettingsDialog" to="." method="_on_steam_login_requested"]
 [connection signal="backup_requested" from="SaveDialog" to="." method="_on_save_backup_requested"]
-[connection signal="restore_requested" from="SaveDialog" to="." method="_on_save_restore_requested"]
-[connection signal="rename_requested" from="SaveDialog" to="." method="_on_save_rename_requested"]
 [connection signal="delete_requested" from="SaveDialog" to="." method="_on_save_delete_requested"]
-[connection signal="import_zip_requested" from="SaveDialog" to="." method="_on_save_import_zip_requested"]
 [connection signal="export_zip_requested" from="SaveDialog" to="." method="_on_save_export_zip_requested"]
+[connection signal="import_zip_requested" from="SaveDialog" to="." method="_on_save_import_zip_requested"]
+[connection signal="rename_requested" from="SaveDialog" to="." method="_on_save_rename_requested"]
+[connection signal="restore_requested" from="SaveDialog" to="." method="_on_save_restore_requested"]
+[connection signal="pressed" from="DeleteConfirmDialog/Margin/VBox/ActionsRow/CancelButton" to="DeleteConfirmDialog" method="hide"]
+[connection signal="pressed" from="DeleteConfirmDialog/Margin/VBox/ActionsRow/ConfirmButton" to="." method="_on_delete_confirmed"]

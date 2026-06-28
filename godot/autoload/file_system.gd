@@ -80,11 +80,13 @@ func addGame(path: String, g_name: String) -> Util.Stats:
 		"name": g_name,
 		"run_path": run_path,
 		"save_path": "",
+		"use_steam_launch": false,
 	}
 	var steam_info := Steam.detect_install(source_dir)
 	if(!steam_info.is_empty()):
 		config["steam_uri"] = str(steam_info.get("steam_uri", ""))
 		config["steam_game_path"] = str(steam_info.get("steam_game_path", ""))
+		config["use_steam_launch"] = true
 		var app_id := str(config["steam_uri"]).trim_prefix("steam://run/").strip_edges()
 		_apply_default_game_config(config, app_id)
 

@@ -16,11 +16,9 @@ ui.dialog.open_directory,Open a Directory,폴더 열기
 ui.add_game.game_name,Game Name,게임 이름
 ui.add_game.game_name_placeholder,Game Name,게임 이름
 ui.add_game.executable_path,Executable Path,실행 파일 경로
-ui.add_game.executable_path_placeholder,C:/Games/Game/Game.exe,C:/Games/Game/Game.exe
 ui.add_mod.mod_name,Mod Name,모드 이름
 ui.add_mod.mod_name_placeholder,Mod Name,모드 이름
 ui.add_mod.source_path,Source Path,원본 경로
-ui.add_mod.source_path_placeholder,C:/Mods/mod.zip,C:/Mods/mod.zip
 ui.settings.mod_name,Mod Name,모드 이름
 ui.settings.title,Settings,설정
 ui.settings.app_tab,App Settings,앱 설정
@@ -34,7 +32,6 @@ ui.settings.download_patchers,Download Patchers,패처 다운로드
 ui.settings.game_name,Game Name,게임 이름
 ui.settings.name_placeholder,Name,이름
 ui.settings.steam_game_folder,Steam Game Folder,스팀 게임 폴더
-ui.settings.steam_game_folder_placeholder,C:/Program Files (x86)/Steam/steamapps/common/[Game],C:/Program Files (x86)/Steam/steamapps/common/[게임]
 ui.settings.browse,Browse,찾아보기
 ui.settings.thumbnail_image,Thumbnail Image,썸네일 이미지
 ui.settings.select_image,Select Image,이미지 선택

@@ -136,13 +136,18 @@ theme_override_constants/separation = 8
 
 [node name="UseSteamLaunchCheckBox" type="CheckBox" parent="Margin/Root/Tabs/ItemSection/SteamGamePathRow" unique_id=1511777448]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(210, 0)
 layout_mode = 2
+theme_override_colors/font_focus_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxEmpty_8cjo3")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_ybks7")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_o2ta1")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_jg5j1")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_2f3ak")
+button_pressed = true
 text = "ui.settings.use_steam_launch"
 
 [node name="SteamGamePathEdit" type="LineEdit" parent="Margin/Root/Tabs/ItemSection/SteamGamePathRow" unique_id=532745642]

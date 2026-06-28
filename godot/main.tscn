@@ -347,8 +347,9 @@ visible = false
 unique_name_in_owner = true
 oversampling_override = 1.0
 initial_position = 2
-size = Vector2i(360, 144)
-visible = false
+size = Vector2i(450, 150)
+min_size = Vector2i(450, 150)
+max_size = Vector2i(450, 150)
 
 [node name="Margin" type="MarginContainer" parent="DeleteConfirmDialog" unique_id=1764202001]
 anchors_preset = 15
@@ -383,8 +384,8 @@ autowrap_mode = 2
 
 [node name="ActionsRow" type="HBoxContainer" parent="DeleteConfirmDialog/Margin/VBox" unique_id=1764202005]
 layout_mode = 2
-alignment = 2
 theme_override_constants/separation = 8
+alignment = 2
 
 [node name="CancelButton" type="Button" parent="DeleteConfirmDialog/Margin/VBox/ActionsRow" unique_id=1764202006]
 layout_mode = 2

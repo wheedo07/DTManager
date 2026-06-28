@@ -36,10 +36,6 @@ var current_is_mod := false
 var selected_thumbnail_path := ""
 var has_item_settings := false
 
-func _ready() -> void:
-	steam_login_button.pressed.connect(func() -> void: steam_login_requested.emit(steam_username_edit.text.strip_edges(), steam_password_edit.text))
-	download_patchers_button.pressed.connect(func() -> void: maintenance_requested.emit("download_patchers"))
-
 func open_dialog(app_config: Dictionary, item_config: Dictionary = {}, is_mod: bool = false) -> void:
 	current_is_mod = is_mod
 	has_item_settings = !item_config.is_empty()
@@ -87,6 +83,12 @@ func _on_thumbnail_browse_pressed() -> void:
 
 func _on_thumbnail_selected(path: String) -> void:
 	selected_thumbnail_path = path
+
+func _on_steam_login_button_pressed() -> void:
+	steam_login_requested.emit(steam_username_edit.text.strip_edges(), steam_password_edit.text)
+
+func _on_download_patchers_button_pressed() -> void:
+	maintenance_requested.emit("download_patchers")
 
 func _on_confirmed() -> void:
 	if(tabs.current_tab == 0):

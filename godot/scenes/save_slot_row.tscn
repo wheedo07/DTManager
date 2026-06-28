@@ -87,3 +87,6 @@ theme_override_styles/hover = SubResource("StyleBoxEmpty_rx6h8")
 theme_override_styles/disabled = SubResource("StyleBoxEmpty_qluub")
 theme_override_styles/focus = SubResource("StyleBoxEmpty_walyu")
 text = "..."
+
+[connection signal="pressed" from="CardPanel/CardRow/MainButton" to="." method="_on_main_button_pressed"]
+[connection signal="pressed" from="CardPanel/CardRow/MenuButton" to="." method="_on_menu_button_pressed"]

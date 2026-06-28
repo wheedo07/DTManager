@@ -40,40 +40,20 @@ var loading_active := false
 
 func _ready() -> void:
 	version_label.text = "v%s (Beta)" % ProjectSettings.get_setting("application/config/version");
-	add_game_dialog.game_created.connect(_on_game_created)
-	add_mod_dialog.mod_created.connect(_on_mod_created)
-	game_settings_dialog.app_settings_saved.connect(_on_app_settings_saved)
-	game_settings_dialog.item_settings_saved.connect(_on_item_settings_saved)
-	game_settings_dialog.maintenance_requested.connect(_on_maintenance_requested)
-	game_settings_dialog.steam_login_requested.connect(_on_steam_login_requested)
-	save_dialog.backup_requested.connect(_on_save_backup_requested)
-	save_dialog.restore_requested.connect(_on_save_restore_requested)
-	save_dialog.rename_requested.connect(_on_save_rename_requested)
-	save_dialog.delete_requested.connect(_on_save_delete_requested)
-	save_dialog.import_zip_requested.connect(_on_save_import_zip_requested)
-	save_dialog.export_zip_requested.connect(_on_save_export_zip_requested)
 	loading_overlay.visible = false
-	if(!play_button.pressed.is_connected(func() -> void: _on_action_pressed("play"))):
-		play_button.pressed.connect(func() -> void: _on_action_pressed("play"))
-	if(!open_folder_button.pressed.is_connected(func() -> void: _on_action_pressed("open_folder"))):
-		open_folder_button.pressed.connect(func() -> void: _on_action_pressed("open_folder"))
-	if(!save_button.pressed.is_connected(func() -> void: _on_action_pressed("save"))):
-		save_button.pressed.connect(func() -> void: _on_action_pressed("save"))
-	if(!delete_button.pressed.is_connected(func() -> void: _on_action_pressed("delete"))):
-		delete_button.pressed.connect(func() -> void: _on_action_pressed("delete"))
-	_bind_hover([
-		prev_game_button,
-		next_game_button,
-		add_mod_button,
-		add_game_button,
-		refresh_button,
-		settings_button,
-		play_button,
-		open_folder_button,
-		save_button,
-		delete_button,
-	])
 	_refresh_all()
+
+func _on_play_button_pressed() -> void:
+	_on_action_pressed("play")
+
+func _on_open_folder_button_pressed() -> void:
+	_on_action_pressed("open_folder")
+
+func _on_save_button_pressed() -> void:
+	_on_action_pressed("save")
+
+func _on_delete_button_pressed() -> void:
+	_on_action_pressed("delete")
 
 func _process(_delta: float) -> void:
 	if(loading_active):
@@ -84,10 +64,10 @@ func _process(_delta: float) -> void:
 	_set_loading(false);
 	_handle_worker_result(result);
 
-func _bind_hover(buttons: Array) -> void:
-	for button in buttons:
-		button.mouse_entered.connect(func() -> void: button.modulate = HOVER_MODULATE)
-		button.mouse_exited.connect(func() -> void: button.modulate = NORMAL_MODULATE)
+func _set_hover_button_modulate(button_path: NodePath, hovered: bool) -> void:
+	var button := get_node_or_null(button_path)
+	if(button is CanvasItem):
+		button.modulate = HOVER_MODULATE if hovered else NORMAL_MODULATE
 
 func _refresh_all() -> void:
 	games = Filesys.list_games()

@@ -9,7 +9,6 @@ ui.mod.state_active,ACTIVE,활성
 ui.mod.state_mod,MOD,모드
 ui.dialog.add_game,Add Game,게임 추가
 ui.dialog.add_mod,Add Mod,모드 추가
-ui.dialog.patch_format,Patch %s,%s 패치
 ui.dialog.settings,Settings,설정
 ui.dialog.open_file,Open a File,파일 열기
 ui.dialog.open_directory,Open a Directory,폴더 열기

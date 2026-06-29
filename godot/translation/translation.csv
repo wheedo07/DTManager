@@ -26,6 +26,7 @@ ui.settings.steam_username,Steam Username,스팀 아이디
 ui.settings.steam_username_placeholder,Steam Account Name,스팀 계정 이름
 ui.settings.steam_password,Steam Password,스팀 비밀번호
 ui.settings.steam_login,Steam Login,스팀 로그인
+ui.settings.steam_logout,Steam Logout,스팀 로그아웃
 ui.settings.download_patchers,Download Patchers,패처 다운로드
 ui.settings.name_placeholder,Name,이름
 ui.settings.steam_game_folder,Steam Game Folder,스팀 게임 폴더

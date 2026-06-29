@@ -85,6 +85,11 @@ func _on_thumbnail_selected(path: String) -> void:
 func _on_steam_login_button_pressed() -> void:
 	steam_login_requested.emit(steam_username_edit.text.strip_edges(), steam_password_edit.text)
 
+func _on_steam_logout_button_pressed() -> void:
+	steam_username_edit.text = ""
+	steam_password_edit.text = ""
+	maintenance_requested.emit("steam_logout")
+
 func _on_download_patchers_button_pressed() -> void:
 	maintenance_requested.emit("download_patchers")
 

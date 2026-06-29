@@ -482,6 +482,8 @@ func _on_maintenance_requested(action: String) -> void:
 	match action:
 		"download_patchers":
 			_start_worker("download_patchers", "Downloading patchers...", Callable(self, "_thread_download_patchers"))
+		"steam_logout":
+			_start_worker("steam_logout", "Logging out from Steam...", Callable(self, "_thread_steam_logout"))
 		_:
 			Global.alert(tr("error.unknown_action"));
 
@@ -534,6 +536,12 @@ func _thread_reimport_game(game_name: String, executable_path: String) -> Dictio
 
 func _thread_download_patchers() -> Dictionary:
 	return Steam.ensure_patchers().to_dict();
+
+func _thread_steam_logout() -> Dictionary:
+	return Filesys.save_app_config({
+		"steam_username": "",
+		"steam_password": "",
+	}).to_dict();
 
 func _thread_steam_login(steam_username: String, steam_password: String) -> Dictionary:
 	var save_result := Filesys.save_app_config({

@@ -7,8 +7,6 @@ signal steam_login_requested(steam_username: String, steam_password: String)
 
 @onready var title_label: Label = %TitleLabel
 @onready var tabs: TabContainer = %Tabs
-@onready var app_section: VBoxContainer = %AppSection
-@onready var item_section: VBoxContainer = %ItemSection
 @onready var game_name_edit: LineEdit = %GameNameEdit
 @onready var game_name_label: Label = %GameNameLabel
 @onready var steam_game_path_label: Label = %SteamGamePathLabel
@@ -18,20 +16,11 @@ signal steam_login_requested(steam_username: String, steam_password: String)
 @onready var save_path_label: Label = %SavePathLabel
 @onready var save_path_row: HBoxContainer = %SavePathRow
 @onready var save_path_edit: LineEdit = %SavePathEdit
-@onready var steam_username_label: Label = %SteamUsernameLabel
 @onready var steam_username_edit: LineEdit = %SteamUsernameEdit
-@onready var steam_password_label: Label = %SteamPasswordLabel
 @onready var steam_password_edit: LineEdit = %SteamPasswordEdit
-@onready var steam_login_button: Button = %SteamLoginButton
-@onready var browse_button: Button = %BrowseButton
 @onready var folder_dialog: FileDialog = %SteamGamePathDialog
-@onready var save_browse_button: Button = %SaveBrowseButton
 @onready var save_folder_dialog: FileDialog = %SavePathDialog
-@onready var thumbnail_browse_button: Button = %ThumbnailBrowseButton
 @onready var thumbnail_dialog: FileDialog = %ThumbnailDialog
-@onready var download_patchers_button: Button = %DownloadPatchersButton
-@onready var save_button: Button = %SaveButton
-@onready var close_button: Button = %CloseButton
 
 var current_is_mod := false
 var selected_thumbnail_path := ""

@@ -4,11 +4,7 @@ const MOD_ROW_SCENE := preload("res://scenes/mod_row.tscn");
 
 @export var HOVER_MODULATE:Color = Color.YELLOW;
 @export var NORMAL_MODULATE:Color = Color(1, 1, 1);
-@onready var prev_game_button: Button = %PrevGameButton
-@onready var next_game_button: Button = %NextGameButton
 @onready var add_mod_button: Button = %AddModButton
-@onready var add_game_button: Button = %AddGameButton
-@onready var settings_button: Button = %SettingsButton
 @onready var game_name_label: Label = %GameName
 @onready var mods_header_label: Label = %ModsHeader
 @onready var version_label: Label = %VersionLabel
@@ -17,10 +13,6 @@ const MOD_ROW_SCENE := preload("res://scenes/mod_row.tscn");
 @onready var preview_title_label: Label = %PreviewTitle
 @onready var preview_subtitle_label: Label = %PreviewSubtitle
 @onready var selected_mod_name_label: Label = %SelectedModName
-@onready var play_button: Button = %PlayButton
-@onready var open_folder_button: Button = %OpenFolderButton
-@onready var save_button: Button = %SaveButton
-@onready var delete_button: Button = %DeleteButton
 @onready var add_game_dialog: Control = %AddGameDialog
 @onready var add_mod_dialog: Control = %AddModDialog
 @onready var game_settings_dialog: Control = %GameSettingsDialog
@@ -43,8 +35,8 @@ var pending_confirm_meta: Dictionary = {}
 
 func _ready() -> void:
 	version_label.text = "v%s (Beta)" % ProjectSettings.get_setting("application/config/version");
-	loading_overlay.visible = false
-	_refresh_all()
+	_set_loading(true, "Loading games...")
+	_load_initial_screen()
 
 func _on_play_button_pressed() -> void:
 	_on_action_pressed("play")
@@ -76,6 +68,11 @@ func _set_hover_button_modulate(button_path: NodePath, hovered: bool) -> void:
 	var button := get_node_or_null(button_path)
 	if(button is CanvasItem):
 		button.modulate = HOVER_MODULATE if hovered else NORMAL_MODULATE
+
+func _load_initial_screen() -> void:
+	await get_tree().process_frame
+	_refresh_all()
+	_set_loading(false)
 
 func _refresh_all() -> void:
 	games = Filesys.list_games()
@@ -537,21 +534,21 @@ func _thread_reimport_game(game_name: String, executable_path: String) -> Dictio
 func _thread_download_patchers() -> Dictionary:
 	return Steam.ensure_patchers().to_dict();
 
+func _save_steam_credentials(steam_username: String, steam_password: String) -> Dictionary:
+	return Filesys.save_app_config({
+		"steam_username": steam_username,
+		"steam_password": steam_password,
+	}).to_dict();
+
 func _thread_steam_logout() -> Dictionary:
-	var save_result := Filesys.save_app_config({
-		"steam_username": "",
-		"steam_password": "",
-	})
-	if(!save_result.ok):
-		return save_result.to_dict()
+	var save_result := _save_steam_credentials("", "")
+	if(!bool(save_result.get("ok", false))):
+		return save_result
 	return Steam.logout().to_dict();
 
 func _thread_steam_login(steam_username: String, steam_password: String) -> Dictionary:
-	var save_result := Filesys.save_app_config({
-		"steam_username": steam_username,
-		"steam_password": steam_password,
-	})
-	if(!save_result.ok): return save_result.to_dict();
+	var save_result := _save_steam_credentials(steam_username, steam_password)
+	if(!bool(save_result.get("ok", false))): return save_result;
 	return Steam.login(steam_username, steam_password).to_dict();
 
 func _thread_save_current(game_name: String, slot_name: String) -> Dictionary:
@@ -573,10 +570,7 @@ func _thread_export_save_zip(game_name: String, slot_name: String, zip_path: Str
 	return Filesys.export_save_slot_zip(game_name, slot_name, zip_path).to_dict();
 
 func _thread_save_app_settings(steam_username: String, steam_password: String) -> Dictionary:
-	return Filesys.save_app_config({
-		"steam_username": steam_username,
-		"steam_password": steam_password,
-	}).to_dict();
+	return _save_steam_credentials(steam_username, steam_password);
 
 func _thread_delete_game(game_name: String) -> Dictionary:
 	return Filesys.delete_game(game_name).to_dict();

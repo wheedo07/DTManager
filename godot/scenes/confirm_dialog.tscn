@@ -4,8 +4,8 @@
 [ext_resource type="Script" uid="uid://d3iq05qn65wlh" path="res://script/confirm_dialog.gd" id="2_u7kwo"]
 
 [node name="ConfirmDialog" type="PanelContainer" unique_id=1465220030]
-custom_minimum_size = Vector2(450, 150)
-custom_maximum_size = Vector2(450, 150)
+custom_minimum_size = Vector2(450, 180)
+custom_maximum_size = Vector2(450, 180)
 offset_right = 450.0
 offset_bottom = 150.0
 theme = ExtResource("1_sjrqf")
@@ -41,13 +41,11 @@ theme_override_constants/separation = 8
 alignment = 2
 
 [node name="CancelButton" type="Button" parent="Margin/VBox/ActionsRow" unique_id=374640608]
-custom_minimum_size = Vector2(0, 43)
 layout_mode = 2
 text = "ui.common.cancel"
 
 [node name="ConfirmButton" type="Button" parent="Margin/VBox/ActionsRow" unique_id=381534627]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 43)
 layout_mode = 2
 text = "ui.common.delete"
 

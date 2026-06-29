@@ -538,10 +538,13 @@ func _thread_download_patchers() -> Dictionary:
 	return Steam.ensure_patchers().to_dict();
 
 func _thread_steam_logout() -> Dictionary:
-	return Filesys.save_app_config({
+	var save_result := Filesys.save_app_config({
 		"steam_username": "",
 		"steam_password": "",
-	}).to_dict();
+	})
+	if(!save_result.ok):
+		return save_result.to_dict()
+	return Steam.logout().to_dict();
 
 func _thread_steam_login(steam_username: String, steam_password: String) -> Dictionary:
 	var save_result := Filesys.save_app_config({

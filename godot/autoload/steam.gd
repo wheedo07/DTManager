@@ -57,6 +57,16 @@ func login(username: String, password: String) -> Util.Stats:
 		return Util.Stats.new(false, _format_depotdownloader_error("\n".join(output), true))
 	return Util.Stats.new(true, "status.steam_logged_in")
 
+func logout() -> Util.Stats:
+	var local_app_data := OS.get_environment("LOCALAPPDATA").strip_edges()
+	if(local_app_data.is_empty()):
+		return Util.Stats.new(true, "status.ok")
+	var isolated_storage_dir := local_app_data.path_join("IsolatedStorage")
+	if(!DirAccess.dir_exists_absolute(isolated_storage_dir)):
+		return Util.Stats.new(true, "status.ok")
+	_delete_account_config_files(isolated_storage_dir)
+	return Util.Stats.new(true, "status.ok")
+
 func ensure_patchers() -> Util.Stats:
 	Util.set_loading_status("Checking patcher database...")
 	var config_result := Net.load_remote_database_json("Patcher.json")
@@ -248,6 +258,15 @@ func _format_depotdownloader_error(output_text: String, is_login: bool) -> Strin
 	if(is_login):
 		return Util.trans("error.steam_login_failed") % [output_text]
 	return Util.trans("error.depot_download_failed") % [output_text]
+
+func _delete_account_config_files(root_dir: String) -> void:
+	for directory_name in DirAccess.get_directories_at(root_dir):
+		_delete_account_config_files(root_dir.path_join(directory_name))
+	var assem_files_dir := root_dir.path_join("AssemFiles")
+	if(!DirAccess.dir_exists_absolute(assem_files_dir)): return;
+	var account_config_path := assem_files_dir.path_join("account.config")
+	if(FileAccess.file_exists(account_config_path)):
+		DirAccess.remove_absolute(account_config_path)
 
 func _read_steam_manifest(path: String) -> Dictionary:
 	if(!FileAccess.file_exists(path)): return {};

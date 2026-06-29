@@ -160,6 +160,9 @@ filters = PackedStringArray("*.zip ; Save Archive")
 use_native_dialog = true
 
 [connection signal="pressed" from="Root/VBox/Header/CloseButton" to="." method="hide"]
+[connection signal="gui_input" from="Root/VBox/InfoFrame/InfoMargin/InfoVBox/SavePathValue" to="." method="_on_save_path_gui_input"]
+[connection signal="mouse_entered" from="Root/VBox/InfoFrame/InfoMargin/InfoVBox/SavePathValue" to="." method="_on_save_path_mouse_entered"]
+[connection signal="mouse_exited" from="Root/VBox/InfoFrame/InfoMargin/InfoVBox/SavePathValue" to="." method="_on_save_path_mouse_exited"]
 [connection signal="text_submitted" from="Root/VBox/SlotsFrame/SlotsMargin/SlotsVBox/RenameRow/RenameEdit" to="." method="_on_rename_submitted"]
 [connection signal="pressed" from="Root/VBox/ActionsRow/ImportButton" to="." method="_open_import_zip_dialog"]
 [connection signal="pressed" from="Root/VBox/ActionsRow/SaveCurrentButton" to="." method="_emit_save_current"]

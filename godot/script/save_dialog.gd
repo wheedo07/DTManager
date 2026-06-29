@@ -40,6 +40,8 @@ func open_dialog(game_name: String, save_path: String, slots: Array[String]) -> 
 	selected_slot_name = ""
 	game_name_label.text = game_name
 	save_path_label.text = save_path
+	save_path_label.tooltip_text = save_path
+	save_path_label.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	rename_edit.max_length = MAX_SLOT_NAME_LENGTH
 	_set_slots(slots)
 	_hide_rename()
@@ -164,8 +166,7 @@ func _on_export_zip_selected(path: String) -> void:
 	export_zip_requested.emit(current_game_name, slot_name, target_path)
 
 func _on_rename_submitted(new_name: String) -> void:
-	if(editing_slot_name.is_empty()):
-		return
+	if(editing_slot_name.is_empty()): return;
 	var trimmed_name := new_name.strip_edges()
 	trimmed_name = _limit_slot_name(trimmed_name)
 	if(trimmed_name.is_empty()):
@@ -205,6 +206,20 @@ func _refresh_save_current_button() -> void:
 	save_current_button.text = tr("ui.save.save_current_selected") % slot_name
 	save_current_button.tooltip_text = save_current_button.text
 	save_current_button.modulate = Color(1, 0.94, 0.72, 1)
+
+func _on_save_path_gui_input(event: InputEvent) -> void:
+	if(!(event is InputEventMouseButton)): return
+	var mouse_event := event as InputEventMouseButton
+	if(!mouse_event.pressed || mouse_event.button_index != MOUSE_BUTTON_LEFT): return
+	var path := save_path_label.text.strip_edges()
+	if(path.is_empty() || path == "-"): return
+	Global.open_path(path)
+
+func _on_save_path_mouse_entered() -> void:
+	save_path_label.modulate = Color(1.0, 0.9, 0.12, 1.0)
+
+func _on_save_path_mouse_exited() -> void:
+	save_path_label.modulate = Color(1, 1, 1, 1)
 
 func _limit_slot_name(slot_name: String) -> String:
 	return slot_name.substr(0, min(slot_name.length(), MAX_SLOT_NAME_LENGTH))

@@ -1,32 +1,43 @@
 # DT Manager
 
-DT Manager is a Windows-focused mod manager for Undertale, Deltarune, and similar fangames. It keeps a clean copy of the original game, builds patched mod outputs from ZIP files, and prepares a runnable game folder every time you launch.
+DT Manager is a Windows-only mod manager for UNDERTALE, DELTARUNE, and similar GameMaker or Godot-based fangames.
 
-It is designed for patch-heavy workflows such as `xdelta`, `GodotDelta`, override-based mods, chained patches, and Steam version-specific mod setups.
+It is built for ZIP-based mod distribution, version-sensitive patching, Steam launch support, and save slot management.
 
-## Overview
+## What It Does
 
-- Stores a preserved copy of each original game
-- Imports mod ZIP files and auto-detects patch type
-- Builds a fresh runnable game folder for each launch
-- Supports Steam launch, backup, restore, and runtime recovery
+- Imports a game from a selected `.exe`
+- Copies the full game folder into DT Manager
+- Imports mod ZIP files and auto-detects how they should be applied
+- Builds mod outputs into `Mod/<game>/<mod>/`
+- Rebuilds `Run/` every time a game is launched
+- Can launch directly or through Steam
+- Can cache specific Steam manifest versions for version-locked mods
+- Can back up, restore, import, export, rename, and delete save slots
 
-## Features
+## Supported Mod Inputs
 
-| Feature | Description |
-| --- | --- |
-| Game import | Copies the full folder based on a selected `.exe` |
-| Mod import | Auto-detects `xdelta`, `GodotDelta`, and override-only mods |
-| Chained patches | Can build a new mod on top of an already selected mod |
-| Steam launch | Replaces the Steam install folder, launches with `steam://run/...`, then restores it |
-| Version pinning | Uses `manifest_id` from `DTManager.mod.json` to build against a cached Steam version |
-| Thumbnails | Stores and previews `thumbnail.dm.png` for games and mods |
-| Recovery safety | Supports backup, restore, forced cleanup, and restart recovery for Steam runs |
+DT Manager detects mod type automatically from the ZIP contents.
 
-## Directory Layout
+- `xdelta` patches
+- `GodotDelta` `.pck` patches
+- override-only mods
+- chained patches built on top of an existing mod
+
+## Project Layout
+
+When exported, DT Manager uses this structure next to the executable:
 
 ```text
 DTManager/
+├─ DTManager.exe
+├─ Files/
+│  ├─ GameSave/
+│  │  └─ <game_name>/
+│  │     └─ <slot_name>/
+│  └─ GameVersions/
+│     └─ <app_id>/
+│        └─ <manifest_id>/
 ├─ Game/
 │  └─ <game_name>/
 │     ├─ config.dm
@@ -35,220 +46,201 @@ DTManager/
 │  └─ <game_name>/
 │     └─ <mod_name>/
 │        ├─ config.dm
-│        ├─ mod.dm.json
 │        └─ thumbnail.dm.png
-├─ Run/
 ├─ Patcher/
-│  ├─ xdelta.exe
 │  ├─ GodotDelta/
 │  └─ DepotDownloader/
-├─ GameVersions/
-│  └─ <app_id>/
-│     └─ <manifest_id>/
+├─ Run/
 ├─ app_config.dm
 └─ runtime_state.dm
 ```
 
-| Path | Description |
-| --- | --- |
-| `Game/` | Stored copies of original game folders |
-| `Mod/` | Built mod outputs after patching |
-| `Run/` | Temporary runtime folder rebuilt before each launch |
-| `Patcher/` | Storage for external patcher tools |
-| `GameVersions/` | Cached Steam game versions by manifest |
-| `app_config.dm` | App settings and Steam login information |
-| `runtime_state.dm` | Runtime recovery state for Steam launches |
+## Add Game
 
-## Workflow
+`Add Game` takes an `.exe` path, not a folder path.
 
-### Add Game
+Flow:
 
-Game import uses a selected `.exe` path, not a directory path.
+1. Select the game executable.
+2. DT Manager copies the entire folder that contains that executable into `Game/<game_name>/`.
+3. The selected executable is stored as a relative `run_path` in `config.dm`.
+4. If the folder is inside a Steam library, DT Manager also stores Steam metadata automatically.
 
-Process:
+The game folder is copied as-is. DT Manager does not need to know ahead of time whether the game uses `.win`, `.pck`, videos, or nested folders.
 
-1. The user selects an executable file.
-2. DT Manager copies the entire folder containing that executable into `Game/<game_name>/`.
-3. The relative path of the selected `.exe` is saved as `run_path` in `config.dm`.
-4. If the folder is inside a Steam library, DT Manager reads `appmanifest_*.acf` and stores `steam_uri` and `steam_game_path` automatically.
+## Add Mod
 
-This means the internal contents do not need to be known in advance. The whole folder is copied as-is, including `.pck`, `.win`, `.mp4`, and nested directories.
+`Add Mod` takes a ZIP file.
 
-### Add Mod
+The ZIP is extracted to a temporary location and then processed automatically:
 
-Mod import uses a single ZIP file as input.
-
-Supported mod types:
-
-- `xdelta` patches
-- `.pck` patches for `GodotDelta`
-- Plain file overrides
-- Chained patches built on top of an already applied mod
-
-### Base Patch Handling
-
-When a mod is added, the ZIP is extracted to a temporary folder and its contents are detected automatically.
-
-- If `.xdelta` files are found, the mod is treated as an xdelta patch.
-- If `.pck` files are found, the mod is treated as a GodotDelta patch.
-- If neither is found, the mod is treated as an override-only mod.
+- If `.xdelta` files are found, DT Manager applies xdelta patches.
+- If `.pck` files are found, DT Manager uses GodotDelta.
+- If neither is found, DT Manager treats the ZIP as direct file overrides.
 
 The built result is stored in `Mod/<game_name>/<mod_name>/`.
 
-#### File Matching
+### File Matching
 
-`xdelta` and `.pck` patch files are matched against base files by name.
+Patch files are matched to base files by name.
 
 Examples:
 
-- `data.xdelta` → `data.win`
-- `game.xdelta` → looks for a base file named `game`
-- `chapter1/data.xdelta` → looks for a matching base file in that path or with the same basename
+- `data.xdelta` matches `data.win`
+- `chapter1/data.xdelta` matches the corresponding file inside `chapter1/`
+- `game.pck` patches a base file with the same base name
 
-In other words, if the base name matches, DT Manager will try to apply the patch even when the extension differs.
+Non-patch files such as `lang.json` are copied as regular overrides.
 
-#### Override Files
+### Chained Patches
 
-Regular non-patch files inside the ZIP are also copied into the mod output.  
-For example, `lang.json` and `options.ini` can be included as direct override files without patching.
+If a mod is already selected, pressing `Add Mod` again builds the new mod on top of that selected mod.
 
-#### Chained Patches
+This supports:
 
-If a mod is already selected and the user presses `Add Mod` again, the new mod is built on top of the currently selected mod instead of the original game.
+- second-stage patches
+- third-stage patches
+- stacked patch workflows
 
-This supports flows such as:
+DT Manager stores only the changed result files inside the new mod folder.
 
-- Second-stage patch: built from the original game
-- Third-stage patch: built from an already patched mod
-
-This makes it possible to stack patches in sequence.
-
-### Launching
+## Launch Flow
 
 If no mod is selected, DT Manager launches the base game.
 
-Standard launch flow:
+Before each launch:
 
-1. Clear the `Run/` folder.
-2. Copy the selected base game folder into `Run/`.
-3. If a mod is selected, merge the mod contents into `Run/`.
-4. Launch the executable using the `run_path` stored in `config.dm`.
+1. `Run/` is cleared.
+2. The selected game base is copied into `Run/`.
+3. If a mod is selected, that mod is merged into `Run/`.
+4. The executable from `run_path` is launched.
 
-## `DTManager.mod.json`
+## Steam Launch
 
-If a mod ZIP contains `DTManager.mod.json`, it is used as additional metadata.
+For Steam games, `use_steam_launch` can be enabled per game.
 
-Its main use right now is Steam version pinning.
+Steam launch flow:
+
+1. Back up the real Steam install folder.
+2. Save runtime recovery state.
+3. Clear the Steam install folder.
+4. Copy the prepared `Run/` files into the Steam install folder.
+5. Open `steam://run/<app_id>`.
+6. Wait for the game process to exit.
+7. Restore the original Steam install folder.
+8. Clear the runtime recovery state.
+
+If DT Manager detects unfinished runtime recovery data on the next startup, it can restore the original Steam game files.
+
+## Version-Locked Mods
+
+If a mod ZIP contains `DTManager.mod.json`, DT Manager can build the mod against a specific Steam version.
 
 Example:
 
 ```json
 {
   "app_id": "1671210",
-  "manifest_id": "2856471167011435804"
+  "manifest_id": "2856471167011435804",
+  "name": "Korean Patch"
 }
 ```
 
-| Key | Description |
-| --- | --- |
-| `app_id` | Steam app ID |
-| `manifest_id` | The Steam manifest version this mod expects |
+Used keys:
 
-If `app_id` and `manifest_id` are present, DT Manager first checks `GameVersions/<app_id>/<manifest_id>/`.  
-If the cache does not exist, it downloads that exact version with `DepotDownloader` and uses it as the base for patching.
+- `app_id`
+- `manifest_id`
+- `branch` if needed later by your workflow
 
-Notes:
+Behavior:
 
-- Steam login information is required for this flow.
-- The user must log into Steam from Settings first.
+- If the current imported game already matches that manifest, DT Manager uses the copied `Game/<game_name>/` folder directly.
+- Otherwise it uses `Files/GameVersions/<app_id>/<manifest_id>/`.
+- If that cache is missing, DT Manager downloads the required version with DepotDownloader first.
 
-## Steam Login and Version Cache
+## Patchers
 
-In the App Settings tab, the user can save a Steam username and password and perform a Steam login.
+DT Manager downloads patcher tools into `Patcher/`.
 
-Login behavior:
+Current external tools:
 
-- Uses `DepotDownloader`
-- Shows a loading message when Steam Guard approval is required in the mobile app
-- Allows manifest-specific downloads after a successful login
+- `GodotDelta`
+- `DepotDownloader`
 
-Version cache behavior:
+`xdelta` patch support is still handled by DT Manager, but xdelta is not downloaded from `Patcher.json`.
 
-- Reads manifest lists from `database/<app_id>/game.json`
-- Reads depot information from `database/<app_id>/manifests/<manifest_id>.json`
-- Downloads the required files with `DepotDownloader`
-- Stores the result in `GameVersions/<app_id>/<manifest_id>/`
+## Steam Login
 
-This cache prevents repeated downloads when the same manifest is needed again.
-
-## Steam Launch Flow
-
-For Steam games, DT Manager temporarily replaces the real Steam install folder instead of doing a normal direct launch.
-
-Process:
-
-1. Back up the original Steam game folder.
-2. Prepare the built game files in `Run/`.
-3. Clear the actual Steam game folder.
-4. Copy the contents of `Run/` into the Steam game folder.
-5. Launch `steam://run/<app_id>`.
-6. Wait for the game to exit.
-7. Restore the original Steam game folder.
-
-## Safety and Recovery
-
-DT Manager includes recovery protection to avoid leaving a Steam install in a broken state.
-
-- Blocks closing the DT Manager window while files are being copied or restored
-- Blocks exit if a recovery state still exists while the game is running
-- Attempts recovery on the next launch if the app was closed mid-process using `runtime_state.dm`
-- Force-kills the running game before restore when necessary
-
-## Thumbnails
-
-Both games and mods can have thumbnails.
-
-Thumbnails are set from the Settings dialog using the image selection button.
-
-Stored at:
-
-- Game: `Game/<game_name>/thumbnail.dm.png`
-- Mod: `Mod/<game_name>/<mod_name>/thumbnail.dm.png`
-
-Preview priority:
-
-1. The selected mod thumbnail
-2. The base game thumbnail
-
-If the mod selection is cleared, the preview falls back to the base game thumbnail.
-
-## Settings Dialog
-
-The Settings dialog is split into two tabs.
-
-### App Settings
+App settings can store:
 
 - Steam username
 - Steam password
-- Steam login
-- Database check
-- Patcher download
 
-### Game / Mod Settings
+Steam login is used for:
 
-- Rename
-- Change Steam game folder
-- Change thumbnail
+- manifest version downloads through DepotDownloader
+- Steam-protected version matching workflows
 
-## External Tools
+The login uses DepotDownloader and supports Steam Guard approval through the normal Steam mobile confirmation flow.
 
-The project currently uses:
+## Save Management
 
-- `xdelta.exe`
-- `gddelta.exe` from [GodotDelta](https://github.com/wheedo07/GodotDelta)
-- `DepotDownloader.exe` from [DepotDownloader](https://github.com/SteamRE/DepotDownloader)
+Each game can store its save path in settings.
 
-## UI Behavior
+Save slots are stored in:
 
-- `Add Game`, `Add Mod`, and `Settings` dialogs close automatically when they lose focus.
-- They do not auto-close while an internal file picker or folder picker is open.
+`Files/GameSave/<game_name>/<slot_name>/`
+
+Supported save actions:
+
+- back up the current live save into a new slot
+- restore a slot into the live save folder
+- rename a slot
+- delete a slot
+- import a slot from a folder or ZIP
+- export a slot to a folder or ZIP
+
+New save slots use the default name format:
+
+`slot_<index>`
+
+## Thumbnails
+
+Games and mods can both have thumbnails.
+
+Stored paths:
+
+- game: `Game/<game_name>/thumbnail.dm.png`
+- mod: `Mod/<game_name>/<mod_name>/thumbnail.dm.png`
+
+Preview behavior:
+
+1. show the selected mod thumbnail if present
+2. otherwise show the base game thumbnail
+
+## Settings
+
+DT Manager has separate settings tabs for:
+
+- app settings
+- game settings
+- mod settings
+
+Game settings include:
+
+- rename
+- Steam game path
+- save path
+- thumbnail
+- Steam launch toggle
+
+Mod settings include:
+
+- rename
+- thumbnail
+
+## Notes
+
+- Target platform is Windows only.
+- The Godot project lives under `godot/`.
+- The built runtime data is stored under `output/` when running from the editor.

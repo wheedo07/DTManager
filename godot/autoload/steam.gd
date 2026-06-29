@@ -159,8 +159,7 @@ func _ensure_depot_downloader() -> Util.Stats:
 	if(!_resolve_depot_downloader_path().is_empty()):
 		return Util.Stats.new(true, "status.ok")
 	var config_result := Net.load_remote_database_json("Patcher.json")
-	if(!config_result.ok):
-		return config_result
+	if(!config_result.ok): return config_result;
 	var url := str(config_result.data.get("DepotDownloader", ""))
 	if(url.is_empty()):
 		return Util.Stats.new(false, "error.depotdownloader_executable_not_found")
@@ -221,13 +220,10 @@ func _resolve_extracted_root(extract_dir: String) -> String:
 
 func _database_game_has_manifest(game_data: Dictionary, manifest_id: String) -> bool:
 	var manifests = game_data.get("manifests", [])
-	if(typeof(manifests) != TYPE_ARRAY):
-		return false
+	if(typeof(manifests) != TYPE_ARRAY): return false;
 	for entry in manifests:
-		if(typeof(entry) != TYPE_DICTIONARY):
-			continue
-		if(str(entry.get("manifest_id", "")) == manifest_id):
-			return true
+		if(typeof(entry) != TYPE_DICTIONARY): continue;
+		if(str(entry.get("manifest_id", "")) == manifest_id): return true;
 	return false
 
 func _json_number_to_string(value) -> String:

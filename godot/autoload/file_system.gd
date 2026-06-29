@@ -71,8 +71,7 @@ func _expand_env_vars(value):
 			env_value = OS.get_environment(env_name.to_upper())
 		if(env_value.is_empty()):
 			env_value = OS.get_environment(env_name.to_lower())
-		if(env_value.is_empty()):
-			continue
+		if(env_value.is_empty()): continue;
 		result = result.replace(match.get_string(0), env_value)
 	return result
 
@@ -91,8 +90,7 @@ func addGame(path: String, g_name: String) -> Util.Stats:
 		return Util.Stats.new(false, "error.game_already_exists")
 
 	var copy_result := copy_directory(source_dir, game_dir)
-	if(!copy_result.ok):
-		return copy_result
+	if(!copy_result.ok): return copy_result;
 
 	var run_path := _relative_path(source_dir, path)
 	var config := {
@@ -112,8 +110,7 @@ func addGame(path: String, g_name: String) -> Util.Stats:
 		_apply_default_game_config(config, app_id)
 
 	var config_result := _write_json(game_dir.path_join(CONFIG_NAME), config)
-	if(!config_result.ok):
-		return config_result
+	if(!config_result.ok): return config_result;
 
 	return Util.Stats.new(true, "status.game_added_successfully", config)
 
@@ -415,8 +412,7 @@ func import_save_slot_zip(g_name: String, slot_name: String, zip_path: String) -
 	var temp_extract_dir := temp_dir("save_zip_" + g_name + "_" + slot_name)
 	delete_directory_if_exists(temp_extract_dir)
 	var extract_result := extract_zip(zip_path, temp_extract_dir)
-	if(!extract_result.ok):
-		return extract_result
+	if(!extract_result.ok): return extract_result;
 	var import_source_dir := _resolve_import_root_dir(temp_extract_dir)
 	var import_result := import_save_slot(g_name, slot_name, import_source_dir)
 	delete_directory_if_exists(temp_extract_dir)
@@ -513,7 +509,7 @@ func extract_zip(zip_path: String, destination_dir: String) -> Util.Stats:
 		var normalized := entry_path.trim_prefix("/")
 		if(normalized.ends_with("/")):
 			ensure_directory(destination_dir.path_join(normalized))
-			continue
+			continue;
 		var output_path := destination_dir.path_join(normalized)
 		ensure_directory(output_path.get_base_dir())
 		var bytes := zip_reader.read_file(entry_path)
@@ -556,14 +552,12 @@ func _pack_directory_into_zip(zip_packer: ZIPPacker, root_dir: String, current_d
 func _resolve_import_root_dir(path: String) -> String:
 	var files := DirAccess.get_files_at(path)
 	var directories := DirAccess.get_directories_at(path)
-	if(files.is_empty() && directories.size() == 1):
-		return path.path_join(directories[0])
+	if(files.is_empty() && directories.size() == 1): return path.path_join(directories[0]);
 	return path
 
 func collect_files_with_extension(root_dir: String, extension: String, relative_path: String = "") -> Array[String]:
 	var files: Array[String] = []
 	var current_dir := root_dir if relative_path.is_empty() else root_dir.path_join(relative_path)
-
 	for directory_name in DirAccess.get_directories_at(current_dir):
 		var nested_relative := directory_name if relative_path.is_empty() else relative_path.path_join(directory_name)
 		files.append_array(collect_files_with_extension(root_dir, extension, nested_relative))
@@ -572,7 +566,6 @@ func collect_files_with_extension(root_dir: String, extension: String, relative_
 		var relative_file := file_name if relative_path.is_empty() else relative_path.path_join(file_name)
 		if(relative_file.to_lower().ends_with(extension)):
 			files.append(relative_file)
-
 	return files
 
 func delete_game(g_name: String) -> Util.Stats:
@@ -672,9 +665,7 @@ func rename_mod(g_name: String, old_name: String, new_name: String) -> Util.Stat
 	var mod_config := mod_config_result.data
 	mod_config["name"] = new_name
 	var save_result := _write_json(new_mod_dir.path_join(CONFIG_NAME), mod_config)
-	if(!save_result.ok):
-		return save_result
-
+	if(!save_result.ok): return save_result;
 	return Util.Stats.new(true, "status.mod_renamed", {"name": new_name})
 
 func clear_run_directory() -> void:
@@ -683,8 +674,7 @@ func clear_run_directory() -> void:
 func _build_xdelta_mod(base_dir: String, extract_dir: String, patch_files: Array[String], mod_dir: String) -> Util.Stats:
 	ensure_directory(mod_dir)
 	var override_result := _copy_override_files(extract_dir, mod_dir, [".xdelta", ".pck"])
-	if(!override_result.ok):
-		return override_result
+	if(!override_result.ok): return override_result;
 
 	for index in range(patch_files.size()):
 		var relative_path := patch_files[index]
@@ -790,8 +780,7 @@ func _copy_directory_internal(source_dir: String, destination_dir: String, overw
 
 	for directory_name in DirAccess.get_directories_at(source_dir):
 		var nested_result := _copy_directory_internal(source_dir.path_join(directory_name), destination_dir.path_join(directory_name), overwrite, excluded_files)
-		if(!nested_result.ok):
-			return nested_result
+		if(!nested_result.ok): return nested_result;
 
 	for file_name in DirAccess.get_files_at(source_dir):
 		if(file_name in excluded_files): continue;
@@ -838,8 +827,7 @@ func _copy_changed_files(base_dir: String, result_dir: String, destination_dir: 
 			return nested_result
 
 	for file_name in DirAccess.get_files_at(current_result_dir):
-		if(file_name == CONFIG_NAME || file_name == MOD_METADATA_NAME):
-			continue
+		if(file_name == CONFIG_NAME || file_name == MOD_METADATA_NAME): continue;
 		var file_relative := file_name if relative_path.is_empty() else relative_path.path_join(file_name)
 		var result_file := result_dir.path_join(file_relative)
 		var base_file := base_dir.path_join(file_relative)
@@ -858,13 +846,10 @@ func _files_match(left_path: String, right_path: String) -> bool:
 	if(!FileAccess.file_exists(left_path) || !FileAccess.file_exists(right_path)):
 		return false
 	var left_file := FileAccess.open(left_path, FileAccess.READ)
-	if(left_file == null):
-		return false
+	if(left_file == null): return false;
 	var right_file := FileAccess.open(right_path, FileAccess.READ)
-	if(right_file == null):
-		return false
-	if(left_file.get_length() != right_file.get_length()):
-		return false
+	if(right_file == null): return false;
+	if(left_file.get_length() != right_file.get_length()): return false;
 	return left_file.get_buffer(left_file.get_length()) == right_file.get_buffer(right_file.get_length())
 
 func _read_json(path: String) -> Util.Stats:
@@ -892,8 +877,7 @@ func _mod_config_data(g_name: String, m_name: String, metadata: Dictionary = {})
 		"game_name": g_name,
 	}
 	for key in ["app_id", "manifest_id", "branch"]:
-		if(metadata.has(key)):
-			config[key] = metadata[key]
+		if(metadata.has(key)): config[key] = metadata[key];
 	return config
 
 func ensure_directory(path: String) -> void:
@@ -935,11 +919,9 @@ func temp_dir(name: String) -> String:
 
 func _read_package_metadata(extract_dir: String) -> Dictionary:
 	var metadata_path := extract_dir.path_join(MOD_METADATA_NAME)
-	if(!FileAccess.file_exists(metadata_path)):
-		return {}
+	if(!FileAccess.file_exists(metadata_path)): return {};
 	var metadata_result := _read_json(metadata_path)
-	if(!metadata_result.ok):
-		return {}
+	if(!metadata_result.ok): return {};
 	return metadata_result.data
 
 func _load_default_game_database() -> Util.Stats:

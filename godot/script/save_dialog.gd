@@ -1,8 +1,10 @@
 extends PanelContainer
 
 const SAVE_SLOT_ROW_SCENE := preload("res://scenes/save_slot_row.tscn")
+const MAX_SLOT_NAME_LENGTH := 8
 
 signal save_current_requested(game_name: String, slot_name: String)
+signal save_current_confirm_requested(game_name: String, slot_name: String)
 signal restore_requested(game_name: String, slot_name: String)
 signal rename_requested(game_name: String, old_name: String, new_name: String)
 signal delete_requested(game_name: String, slot_name: String)
@@ -38,6 +40,7 @@ func open_dialog(game_name: String, save_path: String, slots: Array[String]) -> 
 	selected_slot_name = ""
 	game_name_label.text = game_name
 	save_path_label.text = save_path
+	rename_edit.max_length = MAX_SLOT_NAME_LENGTH
 	_set_slots(slots)
 	_hide_rename()
 	Global.show_centered(self)
@@ -80,7 +83,9 @@ func _emit_save_current() -> void:
 	var slot_name := get_selected_slot_name()
 	if(slot_name.is_empty()):
 		slot_name = _build_slot_name()
-	save_current_requested.emit(current_game_name, slot_name)
+		save_current_requested.emit(current_game_name, slot_name)
+		return
+	save_current_confirm_requested.emit(current_game_name, slot_name)
 
 func _emit_restore_selected() -> void:
 	var slot_name := get_selected_slot_name()
@@ -141,11 +146,11 @@ func _on_context_menu_id_pressed(id: int) -> void:
 			_emit_delete_selected()
 
 func _on_import_zip_selected(path: String) -> void:
-	var slot_name := path.get_file().get_basename().strip_edges()
+	var slot_name := _limit_slot_name(path.get_file().get_basename().strip_edges())
 	if(slot_name.is_empty()):
 		slot_name = _build_slot_name()
-	while _has_slot_name(slot_name):
-		slot_name = _next_slot_name(slot_name)
+	else:
+		slot_name = _make_unique_slot_name(slot_name)
 	import_zip_requested.emit(current_game_name, slot_name, path)
 
 func _on_export_zip_selected(path: String) -> void:
@@ -162,6 +167,7 @@ func _on_rename_submitted(new_name: String) -> void:
 	if(editing_slot_name.is_empty()):
 		return
 	var trimmed_name := new_name.strip_edges()
+	trimmed_name = _limit_slot_name(trimmed_name)
 	if(trimmed_name.is_empty()):
 		Global.alert(tr("error.save_slot_name_empty"))
 		return
@@ -173,12 +179,7 @@ func _hide_rename() -> void:
 	rename_edit.text = ""
 
 func _build_slot_name() -> String:
-	var slot_index := current_slots.size() + 1
-	var slot_name := "slot_%d" % slot_index
-	while _has_slot_name(slot_name):
-		slot_index += 1
-		slot_name = "slot_%d" % slot_index
-	return slot_name
+	return _make_unique_slot_name("slot_%d" % (current_slots.size() + 1))
 
 func _has_slot_name(slot_name: String) -> bool:
 	for current_slot in current_slots:
@@ -188,11 +189,11 @@ func _has_slot_name(slot_name: String) -> bool:
 func _next_slot_name(slot_name: String) -> String:
 	var regex := RegEx.new()
 	if(regex.compile("^slot_(\\d+)$") != OK):
-		return slot_name + "_1"
+		return _make_unique_slot_name(slot_name)
 	var match := regex.search(slot_name)
 	if(match == null):
-		return slot_name + "_1"
-	return "slot_%d" % (int(match.get_string(1)) + 1)
+		return _make_unique_slot_name(slot_name)
+	return _make_unique_slot_name("slot_%d" % (int(match.get_string(1)) + 1))
 
 func _refresh_save_current_button() -> void:
 	var slot_name := get_selected_slot_name()
@@ -204,3 +205,19 @@ func _refresh_save_current_button() -> void:
 	save_current_button.text = tr("ui.save.save_current_selected") % slot_name
 	save_current_button.tooltip_text = save_current_button.text
 	save_current_button.modulate = Color(1, 0.94, 0.72, 1)
+
+func _limit_slot_name(slot_name: String) -> String:
+	return slot_name.substr(0, min(slot_name.length(), MAX_SLOT_NAME_LENGTH))
+
+func _make_unique_slot_name(base_name: String) -> String:
+	var normalized := _limit_slot_name(base_name)
+	if(normalized.is_empty()): normalized = "slot_1";
+	if(!_has_slot_name(normalized)): return normalized;
+	var suffix_index := 1
+	while true:
+		var suffix := str(suffix_index)
+		var prefix_length = max(1, MAX_SLOT_NAME_LENGTH - suffix.length())
+		var candidate := normalized.substr(0, prefix_length) + suffix
+		if(!_has_slot_name(candidate)): return candidate;
+		suffix_index += 1
+	return normalized

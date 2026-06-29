@@ -25,8 +25,7 @@ const MOD_ROW_SCENE := preload("res://scenes/mod_row.tscn");
 @onready var add_mod_dialog: Control = %AddModDialog
 @onready var game_settings_dialog: Control = %GameSettingsDialog
 @onready var save_dialog = %SaveDialog
-@onready var delete_confirm_dialog: Control = %DeleteConfirmDialog
-@onready var delete_confirm_label: Label = %DeleteConfirmLabel
+@onready var confirm_dialog: Control = %ConfirmDialog
 @onready var loading_overlay: Control = %LoadingOverlay
 @onready var loading_label: Label = %LoadingLabel
 @onready var reimport_game_dialog: FileDialog = %ReimportGameDialog
@@ -405,22 +404,30 @@ func _delete_selected_item() -> void:
 func _open_delete_confirm(action: String, meta: Dictionary) -> void:
 	pending_delete_action = action
 	pending_delete_meta = meta.duplicate(true)
+	var message := ""
+	var title := "ui.common.delete"
+	var confirm_text := "ui.common.delete"
 	match action:
 		"mod":
-			delete_confirm_label.text = tr("ui.delete.confirm_mod") % str(meta.get("mod_name", ""))
+			message = tr("ui.delete.confirm_mod") % str(meta.get("mod_name", ""))
+		"save_current":
+			message = tr("ui.save.confirm_overwrite_save") % str(meta.get("slot_name", ""))
+			title = "ui.common.save"
+			confirm_text = "ui.common.save"
 		"save":
-			delete_confirm_label.text = tr("ui.delete.confirm_save") % str(meta.get("slot_name", ""))
+			message = tr("ui.delete.confirm_save") % str(meta.get("slot_name", ""))
 		_:
-			delete_confirm_label.text = tr("ui.delete.confirm_game") % str(meta.get("game_name", ""))
-	Global.show_centered(delete_confirm_dialog)
+			message = tr("ui.delete.confirm_game") % str(meta.get("game_name", ""))
+	confirm_dialog.open_dialog(message, title, confirm_text)
 
 func _on_delete_confirmed() -> void:
-	delete_confirm_dialog.hide()
 	match pending_delete_action:
 		"game":
 			_start_worker("delete", "Deleting game...", Callable(self, "_thread_delete_game").bind(str(pending_delete_meta.get("game_name", ""))))
 		"mod":
 			_start_worker("delete", "Deleting mod...", Callable(self, "_thread_delete_mod").bind(str(pending_delete_meta.get("game_name", "")), str(pending_delete_meta.get("mod_name", ""))))
+		"save_current":
+			_start_worker("save_current", "Saving current save...", Callable(self, "_thread_save_current").bind(str(pending_delete_meta.get("game_name", "")), str(pending_delete_meta.get("slot_name", ""))))
 		"save":
 			_start_worker("save_delete", "Deleting save...", Callable(self, "_thread_delete_save").bind(str(pending_delete_meta.get("game_name", "")), str(pending_delete_meta.get("slot_name", ""))))
 	pending_delete_action = ""
@@ -485,6 +492,13 @@ func _on_steam_login_requested(steam_username: String, steam_password: String) -
 func _on_save_current_requested(game_name: String, slot_name: String) -> void:
 	if(loading_active): return;
 	_start_worker("save_current", "Saving current save...", Callable(self, "_thread_save_current").bind(game_name, slot_name))
+
+func _on_save_current_confirm_requested(game_name: String, slot_name: String) -> void:
+	if(loading_active): return;
+	_open_delete_confirm("save_current", {
+		"game_name": game_name,
+		"slot_name": slot_name,
+	})
 
 func _on_save_restore_requested(game_name: String, slot_name: String) -> void:
 	if(loading_active): return;

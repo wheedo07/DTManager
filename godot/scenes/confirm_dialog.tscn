@@ -1,0 +1,51 @@
+[gd_scene format=3 uid="uid://damnbeowq5bav"]
+
+[ext_resource type="Theme" uid="uid://bl76nfqlr3omk" path="res://Themes/main_theme.tres" id="1_sjrqf"]
+[ext_resource type="Script" uid="uid://d3iq05qn65wlh" path="res://script/confirm_dialog.gd" id="2_u7kwo"]
+
+[node name="ConfirmDialog" type="PanelContainer" unique_id=1465220030]
+custom_minimum_size = Vector2(450, 150)
+custom_maximum_size = Vector2(450, 150)
+offset_right = 450.0
+offset_bottom = 150.0
+theme = ExtResource("1_sjrqf")
+script = ExtResource("2_u7kwo")
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=441716003]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="Margin" unique_id=1876972212]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TitleLabel" type="Label" parent="Margin/VBox" unique_id=314645393]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "ui.common.delete"
+
+[node name="DeleteConfirmLabel" type="Label" parent="Margin/VBox" unique_id=1076203062]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+text = "ui.delete.confirm_game"
+autowrap_mode = 2
+
+[node name="ActionsRow" type="HBoxContainer" parent="Margin/VBox" unique_id=1824272309]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 2
+
+[node name="CancelButton" type="Button" parent="Margin/VBox/ActionsRow" unique_id=374640608]
+layout_mode = 2
+text = "ui.common.cancel"
+
+[node name="ConfirmButton" type="Button" parent="Margin/VBox/ActionsRow" unique_id=381534627]
+layout_mode = 2
+text = "ui.common.delete"
+
+[connection signal="pressed" from="Margin/VBox/ActionsRow/CancelButton" to="." method="hide"]
+[connection signal="pressed" from="Margin/VBox/ActionsRow/ConfirmButton" to="." method="_on_confirm_pressed"]

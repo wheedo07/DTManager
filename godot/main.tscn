@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://dneqadnovmkt4" path="res://scenes/add_mod_dialog.tscn" id="4_mod_dialog"]
 [ext_resource type="PackedScene" uid="uid://cgqidrddyrtqm" path="res://scenes/settings_dialog.tscn" id="5_settings_dialog"]
 [ext_resource type="PackedScene" uid="uid://cf27u8qtkmc1b" path="res://scenes/save_dialog.tscn" id="6_save_dialog"]
+[ext_resource type="PackedScene" uid="uid://damnbeowq5bav" path="res://scenes/confirm_dialog.tscn" id="8_5vw27"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_clear"]
 bg_color = Color(0, 0, 0, 0)
@@ -344,64 +345,23 @@ layout_mode = 0
 
 [node name="ReimportGameDialog" type="FileDialog" parent="." unique_id=987653210]
 unique_name_in_owner = true
-title = "Select Game Executable"
+oversampling_override = 1.0
+title = "Open a File"
 size = Vector2i(790, 360)
 file_mode = 0
 access = 2
 filters = PackedStringArray("*.exe ; Executable Files")
 use_native_dialog = true
-offset_right = 784.0
-offset_bottom = 517.0
 
 [node name="SaveDialog" parent="." unique_id=497443820 instance=ExtResource("6_save_dialog")]
 unique_name_in_owner = true
 visible = false
 layout_mode = 0
 
-[node name="DeleteConfirmDialog" type="PanelContainer" parent="." unique_id=1739442004]
+[node name="ConfirmDialog" parent="." unique_id=1465220030 instance=ExtResource("8_5vw27")]
 unique_name_in_owner = true
 visible = false
-custom_minimum_size = Vector2(450, 150)
-custom_maximum_size = Vector2(450, 150)
 layout_mode = 0
-offset_right = 450.0
-offset_bottom = 150.0
-
-[node name="Margin" type="MarginContainer" parent="DeleteConfirmDialog" unique_id=1764202001]
-layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 12
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 12
-
-[node name="VBox" type="VBoxContainer" parent="DeleteConfirmDialog/Margin" unique_id=1764202002]
-layout_mode = 2
-theme_override_constants/separation = 12
-
-[node name="TitleLabel" type="Label" parent="DeleteConfirmDialog/Margin/VBox" unique_id=1764202003]
-layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "ui.common.delete"
-
-[node name="DeleteConfirmLabel" type="Label" parent="DeleteConfirmDialog/Margin/VBox" unique_id=1764202004]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 3
-text = "ui.delete.confirm_game"
-autowrap_mode = 2
-
-[node name="ActionsRow" type="HBoxContainer" parent="DeleteConfirmDialog/Margin/VBox" unique_id=1764202005]
-layout_mode = 2
-theme_override_constants/separation = 8
-alignment = 2
-
-[node name="CancelButton" type="Button" parent="DeleteConfirmDialog/Margin/VBox/ActionsRow" unique_id=1764202006]
-layout_mode = 2
-text = "ui.common.cancel"
-
-[node name="ConfirmButton" type="Button" parent="DeleteConfirmDialog/Margin/VBox/ActionsRow" unique_id=1764202007]
-layout_mode = 2
-text = "ui.common.delete"
 
 [node name="LoadingOverlay" type="Control" parent="." unique_id=198623450]
 unique_name_in_owner = true
@@ -486,11 +446,11 @@ horizontal_alignment = 1
 [connection signal="maintenance_requested" from="GameSettingsDialog" to="." method="_on_maintenance_requested"]
 [connection signal="steam_login_requested" from="GameSettingsDialog" to="." method="_on_steam_login_requested"]
 [connection signal="file_selected" from="ReimportGameDialog" to="." method="_on_reimport_game_selected"]
-[connection signal="save_current_requested" from="SaveDialog" to="." method="_on_save_current_requested"]
 [connection signal="delete_requested" from="SaveDialog" to="." method="_on_save_delete_requested"]
 [connection signal="export_zip_requested" from="SaveDialog" to="." method="_on_save_export_zip_requested"]
 [connection signal="import_zip_requested" from="SaveDialog" to="." method="_on_save_import_zip_requested"]
 [connection signal="rename_requested" from="SaveDialog" to="." method="_on_save_rename_requested"]
 [connection signal="restore_requested" from="SaveDialog" to="." method="_on_save_restore_requested"]
-[connection signal="pressed" from="DeleteConfirmDialog/Margin/VBox/ActionsRow/CancelButton" to="DeleteConfirmDialog" method="hide"]
-[connection signal="pressed" from="DeleteConfirmDialog/Margin/VBox/ActionsRow/ConfirmButton" to="." method="_on_delete_confirmed"]
+[connection signal="save_current_confirm_requested" from="SaveDialog" to="." method="_on_save_current_confirm_requested"]
+[connection signal="save_current_requested" from="SaveDialog" to="." method="_on_save_current_requested"]
+[connection signal="confirmed" from="ConfirmDialog" to="." method="_on_delete_confirmed"]

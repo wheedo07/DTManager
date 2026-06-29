@@ -41,8 +41,6 @@ func open_dialog(game_name: String, save_path: String, slots: Array[String]) -> 
 	game_name_label.text = game_name
 	save_path_label.text = save_path
 	save_path_label.tooltip_text = save_path
-	save_path_label.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-	rename_edit.max_length = MAX_SLOT_NAME_LENGTH
 	_set_slots(slots)
 	_hide_rename()
 	Global.show_centered(self)

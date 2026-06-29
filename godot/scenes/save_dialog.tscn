@@ -164,7 +164,5 @@ use_native_dialog = true
 [connection signal="pressed" from="Root/VBox/ActionsRow/ImportButton" to="." method="_open_import_zip_dialog"]
 [connection signal="pressed" from="Root/VBox/ActionsRow/BackupButton" to="." method="_emit_backup_current"]
 [connection signal="id_pressed" from="ContextMenu" to="." method="_on_context_menu_id_pressed"]
-[connection signal="canceled" from="ImportZipDialog" to="." method="_on_picker_canceled"]
 [connection signal="file_selected" from="ImportZipDialog" to="." method="_on_import_zip_selected"]
-[connection signal="canceled" from="ExportZipDialog" to="." method="_on_picker_canceled"]
 [connection signal="file_selected" from="ExportZipDialog" to="." method="_on_export_zip_selected"]

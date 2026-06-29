@@ -37,3 +37,7 @@ func alert(message: String) -> void:
 
 func open_path(path: String) -> bool:
 	return OS.shell_open(ProjectSettings.globalize_path(path)) == OK
+
+func show_centered(control: Control) -> void:
+	control.show()
+	control.position = (control.get_viewport_rect().size - control.size) * 0.5

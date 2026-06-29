@@ -31,7 +31,6 @@ var current_game_name := ""
 var editing_slot_name := ""
 var selected_slot_name := ""
 var current_slots: Array[String] = []
-var picker_active := false
 
 func open_dialog(game_name: String, save_path: String, slots: Array[String]) -> void:
 	current_game_name = game_name
@@ -41,7 +40,7 @@ func open_dialog(game_name: String, save_path: String, slots: Array[String]) -> 
 	save_path_label.text = save_path
 	_set_slots(slots)
 	_hide_rename()
-	_show_centered()
+	Global.show_centered(self)
 
 func refresh_slots(slots: Array[String]) -> void:
 	_set_slots(slots, selected_slot_name)
@@ -92,12 +91,10 @@ func _emit_delete_selected() -> void:
 	delete_requested.emit(current_game_name, slot_name)
 
 func _open_import_zip_dialog() -> void:
-	picker_active = true
 	import_zip_dialog.popup_centered_ratio(0.8)
 
 func _open_export_zip_dialog(slot_name: String) -> void:
 	export_zip_dialog.current_file = "%s.zip" % slot_name
-	picker_active = true
 	export_zip_dialog.popup_centered_ratio(0.8)
 
 func _begin_rename_selected(slot_name: String) -> void:
@@ -144,29 +141,16 @@ func _on_import_zip_selected(path: String) -> void:
 	while _has_slot_name(slot_name):
 		slot_name = _next_slot_name(slot_name)
 	import_zip_requested.emit(current_game_name, slot_name, path)
-	call_deferred("_finish_picker_interaction")
 
 func _on_export_zip_selected(path: String) -> void:
 	var slot_name := get_selected_slot_name()
 	if(slot_name.is_empty()):
 		Global.alert(tr("error.no_save_slot_selected"))
-		call_deferred("_finish_picker_interaction")
 		return
 	var target_path := path
 	if(!target_path.to_lower().ends_with(".zip")):
 		target_path += ".zip"
 	export_zip_requested.emit(current_game_name, slot_name, target_path)
-	call_deferred("_finish_picker_interaction")
-
-func _on_picker_canceled() -> void:
-	call_deferred("_finish_picker_interaction")
-
-func _finish_picker_interaction() -> void:
-	picker_active = false
-
-func _show_centered() -> void:
-	show()
-	position = (get_viewport_rect().size - size) * 0.5
 
 func _on_rename_submitted(new_name: String) -> void:
 	if(editing_slot_name.is_empty()):

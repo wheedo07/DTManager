@@ -85,5 +85,4 @@ use_native_dialog = true
 [connection signal="pressed" from="Margin/Root/Header/CloseButton" to="." method="hide"]
 [connection signal="pressed" from="Margin/Root/ExeRow/BrowseButton" to="." method="_on_browse_pressed"]
 [connection signal="pressed" from="Margin/Root/ActionsRow/CreateButton" to="." method="_on_confirmed"]
-[connection signal="canceled" from="GameExeDialog" to="." method="_on_picker_canceled"]
 [connection signal="file_selected" from="GameExeDialog" to="." method="_on_game_exe_selected"]

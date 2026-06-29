@@ -36,7 +36,6 @@ signal steam_login_requested(steam_username: String, steam_password: String)
 var current_is_mod := false
 var selected_thumbnail_path := ""
 var has_item_settings := false
-var picker_active := false
 
 func open_dialog(app_config: Dictionary, item_config: Dictionary = {}, is_mod: bool = false) -> void:
 	current_is_mod = is_mod
@@ -59,45 +58,29 @@ func open_dialog(app_config: Dictionary, item_config: Dictionary = {}, is_mod: b
 	tabs.set_tab_title(1, tr("ui.settings.item_tab"))
 	tabs.set_tab_hidden(1, !has_item_settings)
 	tabs.current_tab = 0 if !has_item_settings else 1
-	_show_centered()
+	Global.show_centered(self)
 	if(tabs.current_tab == 0):
 		steam_username_edit.grab_focus()
 	else:
 		game_name_edit.grab_focus()
 
 func _on_browse_pressed() -> void:
-	picker_active = true
 	folder_dialog.popup_centered_ratio(0.8)
 
 func _on_directory_selected(path: String) -> void:
 	steam_game_path_edit.text = path
-	call_deferred("_finish_picker_interaction")
 
 func _on_save_browse_pressed() -> void:
-	picker_active = true
 	save_folder_dialog.popup_centered_ratio(0.8)
 
 func _on_save_directory_selected(path: String) -> void:
 	save_path_edit.text = path
-	call_deferred("_finish_picker_interaction")
 
 func _on_thumbnail_browse_pressed() -> void:
-	picker_active = true
 	thumbnail_dialog.popup_centered_ratio(0.8)
 
 func _on_thumbnail_selected(path: String) -> void:
 	selected_thumbnail_path = path
-	call_deferred("_finish_picker_interaction")
-
-func _on_picker_canceled() -> void:
-	call_deferred("_finish_picker_interaction")
-
-func _finish_picker_interaction() -> void:
-	picker_active = false
-
-func _show_centered() -> void:
-	show()
-	position = (get_viewport_rect().size - size) * 0.5
 
 func _on_steam_login_button_pressed() -> void:
 	steam_login_requested.emit(steam_username_edit.text.strip_edges(), steam_password_edit.text)

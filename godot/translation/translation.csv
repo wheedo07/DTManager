@@ -42,6 +42,7 @@ ui.save.slot,Save Slot,세이브 슬롯
 ui.save.rename_selected,Rename Selected,선택 슬롯 이름 변경
 ui.save.delete_selected,Delete Selected,선택 슬롯 삭제
 ui.save.backup_current,Save Current,현재 세이브 저장
+ui.save.save_current_selected,Save Current -> %s,%s에 현재 세이브 저장
 ui.save.restore_selected,Use Selected,선택 슬롯 적용
 ui.delete.confirm_game,"Delete game '%s'?","'%s' 게임을 삭제할까요?"
 ui.delete.confirm_mod,"Delete mod '%s'?","'%s' 모드를 삭제할까요?"

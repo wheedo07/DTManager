@@ -62,9 +62,13 @@ func _set_slots(slots: Array[String], selected_slot: String = "") -> void:
 		row.setup(slot_name, slot_name == selected_slot_name)
 	empty_label.visible = slots.is_empty()
 	slot_list.visible = !slots.is_empty()
+	_refresh_save_current_button()
 
 func _on_slot_selected(slot_name: String) -> void:
 	_hide_rename()
+	if(selected_slot_name == slot_name):
+		_set_slots(current_slots, "")
+		return
 	_set_slots(current_slots, slot_name)
 
 func _on_slot_menu_requested(slot_name: String, anchor_rect: Rect2) -> void:
@@ -189,3 +193,14 @@ func _next_slot_name(slot_name: String) -> String:
 	if(match == null):
 		return slot_name + "_1"
 	return "slot_%d" % (int(match.get_string(1)) + 1)
+
+func _refresh_save_current_button() -> void:
+	var slot_name := get_selected_slot_name()
+	if(slot_name.is_empty()):
+		save_current_button.text = tr("ui.save.backup_current")
+		save_current_button.tooltip_text = ""
+		save_current_button.modulate = Color(1, 1, 1, 1)
+		return
+	save_current_button.text = tr("ui.save.save_current_selected") % slot_name
+	save_current_button.tooltip_text = save_current_button.text
+	save_current_button.modulate = Color(1, 0.94, 0.72, 1)

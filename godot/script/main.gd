@@ -68,6 +68,11 @@ func _process(_delta: float) -> void:
 	_set_loading(false);
 	_handle_worker_result(result);
 
+func _unhandled_input(event: InputEvent) -> void:
+	if(!loading_active): return;
+	if(event is InputEventKey || event is InputEventJoypadButton || event is InputEventJoypadMotion):
+		get_viewport().set_input_as_handled()
+
 func _set_hover_button_modulate(button_path: NodePath, hovered: bool) -> void:
 	var button := get_node_or_null(button_path)
 	if(button is CanvasItem):
@@ -191,6 +196,7 @@ func _set_loading(active: bool, message: String = "ui.main.loading") -> void:
 	loading_active = active;
 	var display_message := tr(message) if message.begins_with("ui.") || message.begins_with("status.") || message.begins_with("error.") else message
 	if(active):
+		get_viewport().gui_release_focus()
 		add_game_dialog.hide()
 		add_mod_dialog.hide()
 		game_settings_dialog.hide()

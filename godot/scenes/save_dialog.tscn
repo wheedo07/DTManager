@@ -62,7 +62,7 @@ text = "-"
 [node name="SavePathLabel" type="Label" parent="Root/VBox/InfoFrame/InfoMargin/InfoVBox" unique_id=662871687]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.72, 0.72, 0.72, 1)
-text = "ui.save.folder"
+text = "ui.settings.save_folder"
 
 [node name="SavePathValue" type="Label" parent="Root/VBox/InfoFrame/InfoMargin/InfoVBox" unique_id=102402]
 unique_name_in_owner = true

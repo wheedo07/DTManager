@@ -10,8 +10,6 @@ ui.mod.state_mod,MOD,모드
 ui.dialog.add_game,Add Game,게임 추가
 ui.dialog.add_mod,Add Mod,모드 추가
 ui.dialog.save_slots,Save Slots,세이브 슬롯
-ui.dialog.open_file,Open a File,파일 열기
-ui.dialog.open_directory,Open a Directory,폴더 열기
 ui.common.create,Create,생성
 ui.common.cancel,Cancel,취소
 ui.common.delete,Delete,삭제
@@ -26,7 +24,6 @@ ui.settings.item_tab,Game Settings,게임 설정
 ui.settings.steam_username,Steam Username,스팀 아이디
 ui.settings.steam_username_placeholder,Steam Account Name,스팀 계정 이름
 ui.settings.steam_password,Steam Password,스팀 비밀번호
-ui.settings.steam_password_placeholder,Steam Password,스팀 비밀번호
 ui.settings.steam_login,Steam Login,스팀 로그인
 ui.settings.download_patchers,Download Patchers,패처 다운로드
 ui.settings.name_placeholder,Name,이름
@@ -37,7 +34,6 @@ ui.settings.browse,Browse,찾아보기
 ui.settings.thumbnail_image,Thumbnail Image,썸네일 이미지
 ui.settings.select_image,Select Image,이미지 선택
 ui.save.game,Game,게임
-ui.save.folder,Save Folder,세이브 폴더
 ui.save.slots,Slots,슬롯
 ui.save.empty,No save slots.,세이브 슬롯이 없습니다.
 ui.save.import_zip,Import ZIP,ZIP 가져오기

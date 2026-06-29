@@ -103,10 +103,12 @@ func addGame(path: String, g_name: String) -> Util.Stats:
 	}
 	var steam_info := Steam.detect_install(source_dir)
 	if(!steam_info.is_empty()):
+		config["app_id"] = str(steam_info.get("app_id", ""))
 		config["steam_uri"] = str(steam_info.get("steam_uri", ""))
 		config["steam_game_path"] = str(steam_info.get("steam_game_path", ""))
+		config["installed_manifest_id"] = str(steam_info.get("installed_manifest_id", "")).strip_edges()
 		config["use_steam_launch"] = true
-		var app_id := str(config["steam_uri"]).trim_prefix("steam://run/").strip_edges()
+		var app_id := str(config["app_id"]).strip_edges()
 		_apply_default_game_config(config, app_id)
 
 	var config_result := _write_json(game_dir.path_join(CONFIG_NAME), config)
@@ -291,14 +293,11 @@ func save_mod_config(g_name: String, m_name: String, config: Dictionary) -> Util
 func get_game_save_root(g_name: String) -> String:
 	return SavePath.path_join(g_name)
 
-func get_game_save_slots_root(g_name: String) -> String:
-	return get_game_save_root(g_name)
-
 func get_game_save_slot_dir(g_name: String, slot_name: String) -> String:
-	return get_game_save_slots_root(g_name).path_join(slot_name)
+	return get_game_save_root(g_name).path_join(slot_name)
 
 func list_save_slots(g_name: String) -> Array[String]:
-	var slots_root := get_game_save_slots_root(g_name)
+	var slots_root := get_game_save_root(g_name)
 	if(!DirAccess.dir_exists_absolute(slots_root)): return [];
 	var result: Array[String] = []
 	for slot_name in DirAccess.get_directories_at(slots_root):
@@ -961,6 +960,14 @@ func _resolve_metadata_base_dir(game_name: String, metadata: Dictionary, fallbac
 	var manifest_id := str(metadata.get("manifest_id", "")).strip_edges()
 	if(app_id.is_empty() || manifest_id.is_empty()):
 		return Util.Stats.new(true, "status.ok", {"base_dir": fallback_dir if !fallback_dir.is_empty() else _game_dir(game_name)})
+	var game_config_result := load_game_config(game_name)
+	if(game_config_result.ok):
+		var game_config: Dictionary = game_config_result.data
+		if(
+			str(game_config.get("app_id", "")).strip_edges() == app_id
+			&& str(game_config.get("installed_manifest_id", "")).strip_edges() == manifest_id
+		):
+			return Util.Stats.new(true, "status.ok", {"base_dir": fallback_dir if !fallback_dir.is_empty() else _game_dir(game_name)})
 
 	var cache_dir := get_manifest_cache_dir(app_id, manifest_id)
 	if(!_directory_has_entries(cache_dir)):

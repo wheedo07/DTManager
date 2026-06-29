@@ -70,7 +70,7 @@ text = "ui.settings.steam_password"
 [node name="SteamPasswordEdit" type="LineEdit" parent="Margin/Root/Tabs/AppSection" unique_id=44291813]
 unique_name_in_owner = true
 layout_mode = 2
-placeholder_text = "ui.settings.steam_password_placeholder"
+placeholder_text = "ui.settings.steam_password"
 secret = true
 
 [node name="SteamLoginButton" type="Button" parent="Margin/Root/Tabs/AppSection" unique_id=180006]

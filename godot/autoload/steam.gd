@@ -16,9 +16,12 @@ func detect_install(source_dir: String) -> Dictionary:
 		if(app_id.is_empty()): continue;
 		var manifest_info := _read_steam_manifest(steamapps_dir.path_join(file_name))
 		if(manifest_info.is_empty() || str(manifest_info.get("installdir", "")) != install_dir_name): continue;
+		var installed_manifest_id := _resolve_installed_manifest_id(app_id, manifest_info.get("installed_depot_manifests", {}))
 		return {
+			"app_id": app_id,
 			"steam_uri": "steam://run/" + app_id,
 			"steam_game_path": source_dir,
+			"installed_manifest_id": installed_manifest_id,
 		}
 	return {}
 
@@ -119,10 +122,37 @@ func load_database_game(app_id: String) -> Util.Stats:
 func load_database_manifest(app_id: String, manifest_id: String) -> Util.Stats:
 	return Net.load_remote_database_json("%s/manifests/%s.json" % [app_id, manifest_id])
 
+func _resolve_installed_manifest_id(app_id: String, installed_depot_manifests: Dictionary) -> String:
+	if(typeof(installed_depot_manifests) != TYPE_DICTIONARY || installed_depot_manifests.is_empty()): return ""
+	var game_result := load_database_game(app_id)
+	if(!game_result.ok): return ""
+	var manifests = game_result.data.get("manifests", [])
+	if(typeof(manifests) != TYPE_ARRAY): return ""
+	for entry in manifests:
+		if(typeof(entry) != TYPE_DICTIONARY): continue;
+		var manifest_id := _json_number_to_string(entry.get("manifest_id", ""))
+		if(manifest_id.is_empty()): continue;
+		var manifest_result := load_database_manifest(app_id, manifest_id)
+		if(!manifest_result.ok): continue;
+		var depots = manifest_result.data.get("depots", [])
+		if(typeof(depots) != TYPE_ARRAY || depots.is_empty()): continue;
+		var matches := true
+		for depot_entry in depots:
+			if(typeof(depot_entry) != TYPE_DICTIONARY): continue;
+			var depot_id := _json_number_to_string(depot_entry.get("depot_id", ""))
+			var depot_manifest_id := _json_number_to_string(depot_entry.get("manifest_id", ""))
+			if(depot_id.is_empty() || depot_manifest_id.is_empty()):
+				matches = false
+				break
+			if(str(installed_depot_manifests.get(depot_id, "")).strip_edges() != depot_manifest_id):
+				matches = false
+				break
+		if(matches): return manifest_id;
+	return ""
+
 func _resolve_depot_downloader_path() -> String:
 	var path := Filesys.PatcherPath.path_join("DepotDownloader").path_join("DepotDownloader.exe")
-	if(FileAccess.file_exists(path)):
-		return path
+	if(FileAccess.file_exists(path)): return path;
 	return ""
 
 func _ensure_depot_downloader() -> Util.Stats:
@@ -227,13 +257,37 @@ func _read_steam_manifest(path: String) -> Dictionary:
 	if(!FileAccess.file_exists(path)): return {};
 	var file := FileAccess.open(path, FileAccess.READ)
 	if(file == null): return {};
-	var result := {}
-	var regex := RegEx.new()
-	var compile_error := regex.compile('^\\s*"([^"]+)"\\s*"([^"]*)"\\s*$')
-	if(compile_error != OK): return {};
+	var result := {};
+	var installed_depot_manifests := {};
+	var key_value_regex := RegEx.new()
+	var key_only_regex := RegEx.new()
+	if(key_value_regex.compile('^\\s*"([^"]+)"\\s*"([^"]*)"\\s*$') != OK): return {};
+	if(key_only_regex.compile('^\\s*"([^"]+)"\\s*$') != OK): return {};
+	var stack: Array[String] = []
+	var pending_key := ""
 	while !file.eof_reached():
-		var line := file.get_line()
-		var match := regex.search(line)
-		if(match == null): continue;
-		result[match.get_string(1)] = match.get_string(2)
+		var line := file.get_line().strip_edges()
+		if(line.is_empty()): continue;
+		var key_value_match := key_value_regex.search(line)
+		if(key_value_match != null):
+			var key := key_value_match.get_string(1)
+			var value := key_value_match.get_string(2)
+			if(stack.size() == 1 && stack[0] == "AppState"):
+				result[key] = value
+			elif(stack.size() == 3 && stack[0] == "AppState" && stack[1] == "InstalledDepots" && key == "manifest"):
+				installed_depot_manifests[stack[2]] = value
+			continue
+		var key_only_match := key_only_regex.search(line)
+		if(key_only_match != null):
+			pending_key = key_only_match.get_string(1)
+			continue
+		if(line == "{"):
+			if(!pending_key.is_empty()):
+				stack.append(pending_key)
+				pending_key = ""
+			continue
+		if(line == "}"):
+			if(!stack.is_empty()): stack.pop_back();
+			pending_key = "";
+	result["installed_depot_manifests"] = installed_depot_manifests
 	return result

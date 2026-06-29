@@ -549,14 +549,18 @@ func _thread_save_game_settings(old_name: String, new_name: String, steam_game_p
 	config["name"] = target_name
 	config["save_path"] = save_path.strip_edges()
 	config["use_steam_launch"] = use_steam_launch
+	config.erase("app_id")
 	config.erase("steam_uri")
 	config.erase("steam_game_path")
+	config.erase("installed_manifest_id")
 	if(!steam_game_path.is_empty()):
 		var steam_info := Steam.detect_install(steam_game_path)
 		if(steam_info.is_empty()):
 			return Util.Stats.new(false, tr("error.steam_manifest_not_found")).to_dict()
+		config["app_id"] = str(steam_info.get("app_id", ""))
 		config["steam_uri"] = str(steam_info.get("steam_uri", ""))
 		config["steam_game_path"] = str(steam_info.get("steam_game_path", ""))
+		config["installed_manifest_id"] = str(steam_info.get("installed_manifest_id", "")).strip_edges()
 	var save_result := Filesys.save_game_config(target_name, config)
 	if(!save_result.ok):
 		return save_result.to_dict()

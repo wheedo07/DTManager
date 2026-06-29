@@ -38,8 +38,8 @@ var worker_thread: Thread
 var worker_action := ""
 var worker_meta: Dictionary = {}
 var loading_active := false
-var pending_delete_action := ""
-var pending_delete_meta: Dictionary = {}
+var pending_confirm_action := ""
+var pending_confirm_meta: Dictionary = {}
 
 func _ready() -> void:
 	version_label.text = "v%s (Beta)" % ProjectSettings.get_setting("application/config/version");
@@ -389,21 +389,21 @@ func _open_selected_folder() -> void:
 func _delete_selected_item() -> void:
 	if(!_ensure_game_selected()): return;
 	if(mods.is_empty()):
-		_open_delete_confirm("game", {
+		_open_confirm("game", {
 			"game_name": _selected_game_name(),
 		})
 		return;
 	if(!_has_selected_mod()):
 		Global.alert(tr("error.select_mod_to_delete"));
 		return;
-	_open_delete_confirm("mod", {
+	_open_confirm("mod", {
 		"game_name": _selected_game_name(),
 		"mod_name": _selected_mod_name(),
 	})
 
-func _open_delete_confirm(action: String, meta: Dictionary) -> void:
-	pending_delete_action = action
-	pending_delete_meta = meta.duplicate(true)
+func _open_confirm(action: String, meta: Dictionary) -> void:
+	pending_confirm_action = action
+	pending_confirm_meta = meta.duplicate(true)
 	var message := ""
 	var title := "ui.common.delete"
 	var confirm_text := "ui.common.delete"
@@ -420,18 +420,18 @@ func _open_delete_confirm(action: String, meta: Dictionary) -> void:
 			message = tr("ui.delete.confirm_game") % str(meta.get("game_name", ""))
 	confirm_dialog.open(message, title, confirm_text)
 
-func _on_delete_confirmed() -> void:
-	match pending_delete_action:
+func _on_confirmed() -> void:
+	match pending_confirm_action:
 		"game":
-			_start_worker("delete", "Deleting game...", Callable(self, "_thread_delete_game").bind(str(pending_delete_meta.get("game_name", ""))))
+			_start_worker("delete", "Deleting game...", Callable(self, "_thread_delete_game").bind(str(pending_confirm_meta.get("game_name", ""))))
 		"mod":
-			_start_worker("delete", "Deleting mod...", Callable(self, "_thread_delete_mod").bind(str(pending_delete_meta.get("game_name", "")), str(pending_delete_meta.get("mod_name", ""))))
+			_start_worker("delete", "Deleting mod...", Callable(self, "_thread_delete_mod").bind(str(pending_confirm_meta.get("game_name", "")), str(pending_confirm_meta.get("mod_name", ""))))
 		"save_current":
-			_start_worker("save_current", "Saving current save...", Callable(self, "_thread_save_current").bind(str(pending_delete_meta.get("game_name", "")), str(pending_delete_meta.get("slot_name", ""))))
+			_start_worker("save_current", "Saving current save...", Callable(self, "_thread_save_current").bind(str(pending_confirm_meta.get("game_name", "")), str(pending_confirm_meta.get("slot_name", ""))))
 		"save":
-			_start_worker("save_delete", "Deleting save...", Callable(self, "_thread_delete_save").bind(str(pending_delete_meta.get("game_name", "")), str(pending_delete_meta.get("slot_name", ""))))
-	pending_delete_action = ""
-	pending_delete_meta = {}
+			_start_worker("save_delete", "Deleting save...", Callable(self, "_thread_delete_save").bind(str(pending_confirm_meta.get("game_name", "")), str(pending_confirm_meta.get("slot_name", ""))))
+	pending_confirm_action = ""
+	pending_confirm_meta = {}
 
 func _open_save_dialog() -> void:
 	if(!_ensure_game_selected()): return;
@@ -495,7 +495,7 @@ func _on_save_current_requested(game_name: String, slot_name: String) -> void:
 
 func _on_save_current_confirm_requested(game_name: String, slot_name: String) -> void:
 	if(loading_active): return;
-	_open_delete_confirm("save_current", {
+	_open_confirm("save_current", {
 		"game_name": game_name,
 		"slot_name": slot_name,
 	})
@@ -510,7 +510,7 @@ func _on_save_rename_requested(game_name: String, old_name: String, new_name: St
 
 func _on_save_delete_requested(game_name: String, slot_name: String) -> void:
 	if(loading_active): return;
-	_open_delete_confirm("save", {
+	_open_confirm("save", {
 		"game_name": game_name,
 		"slot_name": slot_name,
 	})

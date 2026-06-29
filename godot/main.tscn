@@ -486,7 +486,7 @@ horizontal_alignment = 1
 [connection signal="maintenance_requested" from="GameSettingsDialog" to="." method="_on_maintenance_requested"]
 [connection signal="steam_login_requested" from="GameSettingsDialog" to="." method="_on_steam_login_requested"]
 [connection signal="file_selected" from="ReimportGameDialog" to="." method="_on_reimport_game_selected"]
-[connection signal="backup_requested" from="SaveDialog" to="." method="_on_save_backup_requested"]
+[connection signal="save_current_requested" from="SaveDialog" to="." method="_on_save_current_requested"]
 [connection signal="delete_requested" from="SaveDialog" to="." method="_on_save_delete_requested"]
 [connection signal="export_zip_requested" from="SaveDialog" to="." method="_on_save_export_zip_requested"]
 [connection signal="import_zip_requested" from="SaveDialog" to="." method="_on_save_import_zip_requested"]

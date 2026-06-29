@@ -258,7 +258,7 @@ func _handle_worker_result(result) -> void:
 			pass;
 		"download_patchers":
 			pass;
-		"save_backup", "save_restore", "save_rename", "save_delete", "save_import_zip", "save_export_zip":
+		"save_current", "save_restore", "save_rename", "save_delete", "save_import_zip", "save_export_zip":
 			_refresh_save_dialog(true)
 		_:
 			_refresh_all();
@@ -476,9 +476,9 @@ func _on_steam_login_requested(steam_username: String, steam_password: String) -
 	if(loading_active): return;
 	_start_worker("steam_login", "Logging in to Steam...", Callable(self, "_thread_steam_login").bind(steam_username, steam_password))
 
-func _on_save_backup_requested(game_name: String, slot_name: String) -> void:
+func _on_save_current_requested(game_name: String, slot_name: String) -> void:
 	if(loading_active): return;
-	_start_worker("save_backup", "Backing up save...", Callable(self, "_thread_backup_save").bind(game_name, slot_name))
+	_start_worker("save_current", "Saving current save...", Callable(self, "_thread_save_current").bind(game_name, slot_name))
 
 func _on_save_restore_requested(game_name: String, slot_name: String) -> void:
 	if(loading_active): return;
@@ -523,7 +523,7 @@ func _thread_steam_login(steam_username: String, steam_password: String) -> Dict
 	if(!save_result.ok): return save_result.to_dict();
 	return Steam.login(steam_username, steam_password).to_dict();
 
-func _thread_backup_save(game_name: String, slot_name: String) -> Dictionary:
+func _thread_save_current(game_name: String, slot_name: String) -> Dictionary:
 	return Filesys.backup_save_slot(game_name, slot_name).to_dict();
 
 func _thread_restore_save(game_name: String, slot_name: String) -> Dictionary:

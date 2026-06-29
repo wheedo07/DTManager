@@ -2,7 +2,7 @@ extends PanelContainer
 
 const SAVE_SLOT_ROW_SCENE := preload("res://scenes/save_slot_row.tscn")
 
-signal backup_requested(game_name: String, slot_name: String)
+signal save_current_requested(game_name: String, slot_name: String)
 signal restore_requested(game_name: String, slot_name: String)
 signal rename_requested(game_name: String, old_name: String, new_name: String)
 signal delete_requested(game_name: String, slot_name: String)
@@ -20,7 +20,7 @@ const MENU_DELETE_SELECTED := 4
 @onready var empty_label: Label = %EmptyLabel
 @onready var rename_row: HBoxContainer = %RenameRow
 @onready var rename_edit: LineEdit = %RenameEdit
-@onready var backup_button: Button = %BackupButton
+@onready var save_current_button: Button = %SaveCurrentButton
 @onready var import_button: Button = %ImportButton
 @onready var close_button: Button = %CloseButton
 @onready var context_menu: PopupMenu = %ContextMenu
@@ -72,9 +72,11 @@ func _on_slot_menu_requested(slot_name: String, anchor_rect: Rect2) -> void:
 	_set_slots(current_slots, slot_name)
 	_open_context_menu(anchor_rect)
 
-func _emit_backup_current() -> void:
-	var slot_name := _build_slot_name()
-	backup_requested.emit(current_game_name, slot_name)
+func _emit_save_current() -> void:
+	var slot_name := get_selected_slot_name()
+	if(slot_name.is_empty()):
+		slot_name = _build_slot_name()
+	save_current_requested.emit(current_game_name, slot_name)
 
 func _emit_restore_selected() -> void:
 	var slot_name := get_selected_slot_name()

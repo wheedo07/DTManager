@@ -129,7 +129,7 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "ui.save.import_zip"
 
-[node name="BackupButton" type="Button" parent="Root/VBox/ActionsRow" unique_id=12345002]
+[node name="SaveCurrentButton" type="Button" parent="Root/VBox/ActionsRow" unique_id=12345002]
 unique_name_in_owner = true
 layout_mode = 2
 text = "ui.save.backup_current"
@@ -162,7 +162,7 @@ use_native_dialog = true
 [connection signal="pressed" from="Root/VBox/Header/CloseButton" to="." method="hide"]
 [connection signal="text_submitted" from="Root/VBox/SlotsFrame/SlotsMargin/SlotsVBox/RenameRow/RenameEdit" to="." method="_on_rename_submitted"]
 [connection signal="pressed" from="Root/VBox/ActionsRow/ImportButton" to="." method="_open_import_zip_dialog"]
-[connection signal="pressed" from="Root/VBox/ActionsRow/BackupButton" to="." method="_emit_backup_current"]
+[connection signal="pressed" from="Root/VBox/ActionsRow/SaveCurrentButton" to="." method="_emit_save_current"]
 [connection signal="id_pressed" from="ContextMenu" to="." method="_on_context_menu_id_pressed"]
 [connection signal="file_selected" from="ImportZipDialog" to="." method="_on_import_zip_selected"]
 [connection signal="file_selected" from="ExportZipDialog" to="." method="_on_export_zip_selected"]

@@ -32,8 +32,7 @@ static func load_remote_database_json(relative_path: String) -> Util.Stats:
 
 static func _request_json_from_url(url: String, headers: PackedStringArray = []) -> Dictionary:
 	var request_result := _request_url(url, headers)
-	if(!bool(request_result.get("ok", false))):
-		return request_result
+	if(!bool(request_result.get("ok", false))): return request_result;
 	var parsed = JSON.parse_string(PackedByteArray(request_result.get("body", [])).get_string_from_utf8())
 	if(parsed == null):
 		return {"ok": false, "message": Util.trans("error.failed_to_parse_remote_json")}

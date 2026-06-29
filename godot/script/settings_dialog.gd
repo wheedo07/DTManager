@@ -43,6 +43,9 @@ func open_dialog(app_config: Dictionary, item_config: Dictionary = {}, is_mod: b
 	use_steam_launch_check_box.visible = !is_mod && has_item_settings
 	save_path_label.visible = !is_mod && has_item_settings
 	save_path_row.visible = !is_mod && has_item_settings
+	save_path_edit.editable = false
+	save_path_edit.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	save_path_edit.tooltip_text = save_path_edit.text
 	tabs.set_tab_title(0, tr("ui.settings.app_tab"))
 	tabs.set_tab_title(1, tr("ui.settings.item_tab"))
 	tabs.set_tab_hidden(1, !has_item_settings)
@@ -64,6 +67,21 @@ func _on_save_browse_pressed() -> void:
 
 func _on_save_directory_selected(path: String) -> void:
 	save_path_edit.text = path
+	save_path_edit.tooltip_text = path
+
+func _on_save_path_gui_input(event: InputEvent) -> void:
+	if(!(event is InputEventMouseButton)): return
+	var mouse_event := event as InputEventMouseButton
+	if(!mouse_event.pressed || mouse_event.button_index != MOUSE_BUTTON_LEFT): return;
+	var path := save_path_edit.text.strip_edges()
+	if(path.is_empty()): return;
+	Global.open_path(path)
+
+func _on_save_path_mouse_entered() -> void:
+	save_path_edit.modulate = Color(1.0, 0.9, 0.12, 1.0)
+
+func _on_save_path_mouse_exited() -> void:
+	save_path_edit.modulate = Color(1, 1, 1, 1)
 
 func _on_thumbnail_browse_pressed() -> void:
 	thumbnail_dialog.popup_centered_ratio(0.8)

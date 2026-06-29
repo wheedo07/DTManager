@@ -101,10 +101,7 @@ func addGame(path: String, g_name: String) -> Util.Stats:
 	}
 	var steam_info := Steam.detect_install(source_dir)
 	if(!steam_info.is_empty()):
-		config["app_id"] = str(steam_info.get("app_id", ""))
-		config["steam_uri"] = str(steam_info.get("steam_uri", ""))
-		config["steam_game_path"] = str(steam_info.get("steam_game_path", ""))
-		config["installed_manifest_id"] = str(steam_info.get("installed_manifest_id", "")).strip_edges()
+		_apply_detected_steam_config(config, steam_info)
 		config["use_steam_launch"] = true
 		var app_id := str(config["app_id"]).strip_edges()
 		_apply_default_game_config(config, app_id)
@@ -575,6 +572,80 @@ func delete_game(g_name: String) -> Util.Stats:
 	delete_directory_if_exists(ModPath.path_join(g_name))
 	delete_directory_if_exists(game_dir)
 	return Util.Stats.new(true, "status.game_deleted")
+
+func reimport_game(g_name: String, executable_path: String) -> Util.Stats:
+	if(g_name.strip_edges().is_empty()):
+		return Util.Stats.new(false, "error.game_name_empty")
+	if(!FileAccess.file_exists(executable_path)):
+		return Util.Stats.new(false, "error.executable_file_not_found")
+
+	var game_dir := _game_dir(g_name)
+	if(!DirAccess.dir_exists_absolute(game_dir)):
+		return Util.Stats.new(false, "error.game_does_not_exist")
+	var source_dir := executable_path.get_base_dir()
+	if(!DirAccess.dir_exists_absolute(source_dir)):
+		return Util.Stats.new(false, "error.game_directory_not_found")
+
+	var config_result := load_game_config(g_name)
+	if(!config_result.ok): return config_result;
+	var config: Dictionary = config_result.data.duplicate(true)
+
+	var thumbnail_path := get_game_thumbnail_path(g_name)
+	var thumbnail_backup_path := ""
+	if(FileAccess.file_exists(thumbnail_path)):
+		thumbnail_backup_path = temp_dir("reimport_thumbnail_" + g_name + "_" + THUMBNAIL_NAME)
+		if(FileAccess.file_exists(thumbnail_backup_path)):
+			DirAccess.remove_absolute(thumbnail_backup_path)
+		var thumbnail_copy_error := DirAccess.copy_absolute(thumbnail_path, thumbnail_backup_path)
+		if(thumbnail_copy_error != OK):
+			return Util.Stats.new(false, "error.failed_to_copy_thumbnail")
+
+	var import_dir := temp_dir("reimport_game_" + g_name)
+	delete_directory_if_exists(import_dir)
+	var copy_result := copy_directory(source_dir, import_dir)
+	if(!copy_result.ok):
+		_cleanup_reimport_temp_paths(import_dir, thumbnail_backup_path)
+		return copy_result
+
+	delete_directory_contents(game_dir)
+	var merge_result := merge_directory(import_dir, game_dir)
+	if(!merge_result.ok):
+		_cleanup_reimport_temp_paths(import_dir, thumbnail_backup_path)
+		return merge_result
+	delete_directory_if_exists(import_dir)
+
+	config["name"] = g_name
+	config["run_path"] = _relative_path(source_dir, executable_path)
+	config.erase("app_id")
+	config.erase("steam_uri")
+	config.erase("steam_game_path")
+	config.erase("installed_manifest_id")
+	var steam_info := Steam.detect_install(source_dir)
+	if(!steam_info.is_empty()):
+		_apply_detected_steam_config(config, steam_info)
+
+	var save_result := save_game_config(g_name, config)
+	if(!save_result.ok):
+		_cleanup_reimport_temp_paths("", thumbnail_backup_path)
+		return save_result
+	if(FileAccess.file_exists(thumbnail_backup_path)):
+		var restore_error := DirAccess.copy_absolute(thumbnail_backup_path, thumbnail_path)
+		DirAccess.remove_absolute(thumbnail_backup_path)
+		if(restore_error != OK):
+			return Util.Stats.new(false, "error.failed_to_copy_thumbnail")
+	return Util.Stats.new(true, "status.game_added_successfully", config)
+
+func _cleanup_reimport_temp_paths(import_dir: String, thumbnail_backup_path: String) -> void:
+	if(!import_dir.is_empty()):
+		delete_directory_if_exists(import_dir)
+	if(FileAccess.file_exists(thumbnail_backup_path)):
+		DirAccess.remove_absolute(thumbnail_backup_path)
+
+func _apply_detected_steam_config(config: Dictionary, steam_info: Dictionary) -> void:
+	config["app_id"] = str(steam_info.get("app_id", ""))
+	config["steam_uri"] = str(steam_info.get("steam_uri", ""))
+	config["steam_game_path"] = str(steam_info.get("steam_game_path", ""))
+	config["installed_manifest_id"] = str(steam_info.get("installed_manifest_id", "")).strip_edges()
 
 func delete_mod(g_name: String, m_name: String) -> Util.Stats:
 	var mod_dir := _mod_dir(g_name, m_name)

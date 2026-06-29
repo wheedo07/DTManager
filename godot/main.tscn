@@ -150,7 +150,7 @@ theme_override_styles/focus = SubResource("StyleBoxFlat_clear")
 text = "Add Game"
 alignment = 0
 
-[node name="RefreshButton" type="Button" parent="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot" unique_id=1623391980]
+[node name="ReimportGameButton" type="Button" parent="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot" unique_id=1623391980]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
@@ -159,7 +159,7 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_clear")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_clear")
 theme_override_styles/hover = SubResource("StyleBoxFlat_clear")
 theme_override_styles/focus = SubResource("StyleBoxFlat_clear")
-text = "Refresh"
+text = "Reimport"
 alignment = 0
 
 [node name="SettingsButton" type="Button" parent="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot" unique_id=316310381]
@@ -341,6 +341,15 @@ layout_mode = 0
 unique_name_in_owner = true
 visible = false
 layout_mode = 0
+
+[node name="ReimportGameDialog" type="FileDialog" parent="." unique_id=987653210]
+unique_name_in_owner = true
+title = "Select Game Executable"
+size = Vector2i(790, 360)
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.exe ; Executable Files")
+use_native_dialog = true
 offset_right = 784.0
 offset_bottom = 517.0
 
@@ -452,9 +461,9 @@ horizontal_alignment = 1
 [connection signal="mouse_entered" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/AddGameButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/AddGameButton"), true]]
 [connection signal="mouse_exited" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/AddGameButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/AddGameButton"), false]]
 [connection signal="pressed" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/AddGameButton" to="." method="_on_add_game_pressed"]
-[connection signal="mouse_entered" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/RefreshButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/RefreshButton"), true]]
-[connection signal="mouse_exited" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/RefreshButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/RefreshButton"), false]]
-[connection signal="pressed" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/RefreshButton" to="." method="_on_refresh_pressed"]
+[connection signal="mouse_entered" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/ReimportGameButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/ReimportGameButton"), true]]
+[connection signal="mouse_exited" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/ReimportGameButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/ReimportGameButton"), false]]
+[connection signal="pressed" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/ReimportGameButton" to="." method="_on_reimport_game_pressed"]
 [connection signal="mouse_entered" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/SettingsButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/SettingsButton"), true]]
 [connection signal="mouse_exited" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/SettingsButton" to="." method="_set_hover_button_modulate" binds= [NodePath("Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/SettingsButton"), false]]
 [connection signal="pressed" from="Margin/Root/Body/Sidebar/SidebarMargin/SidebarRoot/SettingsButton" to="." method="_on_settings_pressed"]
@@ -476,6 +485,7 @@ horizontal_alignment = 1
 [connection signal="item_settings_saved" from="GameSettingsDialog" to="." method="_on_item_settings_saved"]
 [connection signal="maintenance_requested" from="GameSettingsDialog" to="." method="_on_maintenance_requested"]
 [connection signal="steam_login_requested" from="GameSettingsDialog" to="." method="_on_steam_login_requested"]
+[connection signal="file_selected" from="ReimportGameDialog" to="." method="_on_reimport_game_selected"]
 [connection signal="backup_requested" from="SaveDialog" to="." method="_on_save_backup_requested"]
 [connection signal="delete_requested" from="SaveDialog" to="." method="_on_save_delete_requested"]
 [connection signal="export_zip_requested" from="SaveDialog" to="." method="_on_save_export_zip_requested"]

@@ -8,7 +8,6 @@ const MOD_ROW_SCENE := preload("res://scenes/mod_row.tscn");
 @onready var next_game_button: Button = %NextGameButton
 @onready var add_mod_button: Button = %AddModButton
 @onready var add_game_button: Button = %AddGameButton
-@onready var refresh_button: Button = %RefreshButton
 @onready var settings_button: Button = %SettingsButton
 @onready var game_name_label: Label = %GameName
 @onready var mods_header_label: Label = %ModsHeader
@@ -30,6 +29,7 @@ const MOD_ROW_SCENE := preload("res://scenes/mod_row.tscn");
 @onready var delete_confirm_label: Label = %DeleteConfirmLabel
 @onready var loading_overlay: Control = %LoadingOverlay
 @onready var loading_label: Label = %LoadingLabel
+@onready var reimport_game_dialog: FileDialog = %ReimportGameDialog
 
 var games: Array[Dictionary] = []
 var mods: Array[Dictionary] = []
@@ -83,7 +83,7 @@ func _refresh_all() -> void:
 		return
 
 	selected_game_index = clampi(selected_game_index, 0, games.size() - 1)
-	var game_name = _selected_game().get("name", "")
+	var game_name = _selected_game_name()
 	mods = Filesys.list_mods(game_name)
 	if(selected_mod_index >= mods.size()):
 		selected_mod_index = -1
@@ -101,10 +101,10 @@ func _refresh_screen() -> void:
 		return;
 
 	var game := _selected_game()
-	var game_name := str(game.get("name", ""));
+	var game_name := _selected_game_name()
 	var mod_name := ""
 	if(_has_selected_mod()):
-		mod_name = str(_selected_mod().get("name", ""))
+		mod_name = _selected_mod_name()
 	_refresh_preview_image(game_name, mod_name);
 	var run_path := str(game.get("run_path", ""));
 	game_name_label.text = str(game.get("name", "Unnamed Game"));
@@ -158,7 +158,7 @@ func _refresh_selected_mod() -> void:
 
 func _refresh_add_mod_button() -> void:
 	if(_has_selected_mod()):
-		var mod_name := str(_selected_mod().get("name", ""))
+		var mod_name := _selected_mod_name()
 		add_mod_button.text = "Patch Mod"
 		add_mod_button.tooltip_text = "Base mod: %s" % mod_name
 		return
@@ -169,12 +169,23 @@ func _selected_game() -> Dictionary:
 	if(games.is_empty()): return {};
 	return games[selected_game_index];
 
+func _selected_game_name() -> String:
+	return str(_selected_game().get("name", ""))
+
 func _selected_mod() -> Dictionary:
 	if(!_has_selected_mod()): return {};
 	return mods[selected_mod_index];
 
+func _selected_mod_name() -> String:
+	return str(_selected_mod().get("name", ""))
+
 func _has_selected_mod() -> bool:
 	return !mods.is_empty() && selected_mod_index >= 0 && selected_mod_index < mods.size();
+
+func _ensure_game_selected() -> bool:
+	if(!games.is_empty()): return true;
+	Global.alert(tr("error.no_game_selected"))
+	return false
 
 func _set_loading(active: bool, message: String = "ui.main.loading") -> void:
 	loading_active = active;
@@ -223,6 +234,12 @@ func _handle_worker_result(result) -> void:
 		"add_mod":
 			_refresh_all();
 			selected_mod_index = -1;
+			_refresh_screen();
+		"reimport_game":
+			_refresh_all();
+			var reimported_game := str(worker_meta.get("game_name", ""));
+			if(!reimported_game.is_empty()):
+				_select_game_by_name(reimported_game);
 			_refresh_screen();
 		"delete":
 			_refresh_all();
@@ -281,12 +298,28 @@ func _on_add_mod_pressed() -> void:
 		return;
 	var base_mod_name := ""
 	if(_has_selected_mod()):
-		base_mod_name = str(_selected_mod().get("name", ""))
+		base_mod_name = _selected_mod_name()
 	add_mod_dialog.open_dialog(base_mod_name);
 
-func _on_refresh_pressed() -> void:
+func _on_reimport_game_pressed() -> void:
 	if(loading_active): return;
-	_refresh_all();
+	if(!_ensure_game_selected()):
+		return;
+	reimport_game_dialog.current_dir = _get_reimport_initial_dir()
+	reimport_game_dialog.current_file = ""
+	reimport_game_dialog.popup_centered_ratio(0.8)
+
+func _on_reimport_game_selected(path: String) -> void:
+	if(loading_active): return;
+	if(!_ensure_game_selected()): return;
+	var game_name := _selected_game_name()
+	_start_worker("reimport_game", "Reimporting game files...", Callable(self, "_thread_reimport_game").bind(game_name, path), {"game_name": game_name})
+
+func _get_reimport_initial_dir() -> String:
+	var game := _selected_game()
+	var steam_game_path := str(game.get("steam_game_path", "")).strip_edges()
+	if(!steam_game_path.is_empty()): return steam_game_path
+	return Filesys.GamePath.path_join(_selected_game_name())
 
 func _on_settings_pressed() -> void:
 	if(loading_active): return;
@@ -299,9 +332,9 @@ func _on_settings_pressed() -> void:
 	if(games.is_empty()):
 		game_settings_dialog.open_dialog(app_config_result.data, item_config, false);
 		return;
-	var game_name := str(_selected_game().get("name", ""));
+	var game_name := _selected_game_name()
 	if(_has_selected_mod()):
-		var mod_name := str(_selected_mod().get("name", ""));
+		var mod_name := _selected_mod_name()
 		var mod_config_result := Filesys.load_mod_config(game_name, mod_name);
 		if(!mod_config_result.ok):
 			Global.alert(mod_config_result.message);
@@ -332,45 +365,35 @@ func _on_action_pressed(action: String) -> void:
 
 
 func _play_selected_mod() -> void:
-	if(games.is_empty()):
-		Global.alert(tr("error.no_game_selected"));
-		return;
-
-	var game_name := str(_selected_game().get("name", ""));
+	if(!_ensure_game_selected()): return;
+	var game_name := _selected_game_name()
 	var mod_name := "";
 	if(_has_selected_mod()):
-		mod_name = str(_selected_mod().get("name", ""));
+		mod_name = _selected_mod_name()
 	_start_worker("play", "Launching game...", Callable(self, "_thread_play").bind(game_name, mod_name));
 
 func _open_selected_folder() -> void:
-	if(games.is_empty()):
-		Global.alert(tr("error.no_game_selected"));
-		return;
-
+	if(!_ensure_game_selected()): return;
 	if(!_has_selected_mod()):
-		Global.open_path(Filesys.GamePath.path_join(str(_selected_game().get("name", ""))));
+		Global.open_path(Filesys.GamePath.path_join(_selected_game_name()));
 		return;
 
-	var mod_path := Filesys.ModPath.path_join(str(_selected_game().get("name", ""))).path_join(str(_selected_mod().get("name", "")));
+	var mod_path := Filesys.ModPath.path_join(_selected_game_name()).path_join(_selected_mod_name());
 	Global.open_path(mod_path);
 
 func _delete_selected_item() -> void:
-	if(games.is_empty()):
-		Global.alert(tr("error.no_game_selected"));
-		return;
-
+	if(!_ensure_game_selected()): return;
 	if(mods.is_empty()):
 		_open_delete_confirm("game", {
-			"game_name": str(_selected_game().get("name", "")),
+			"game_name": _selected_game_name(),
 		})
 		return;
 	if(!_has_selected_mod()):
 		Global.alert(tr("error.select_mod_to_delete"));
 		return;
-
 	_open_delete_confirm("mod", {
-		"game_name": str(_selected_game().get("name", "")),
-		"mod_name": str(_selected_mod().get("name", "")),
+		"game_name": _selected_game_name(),
+		"mod_name": _selected_mod_name(),
 	})
 
 func _open_delete_confirm(action: String, meta: Dictionary) -> void:
@@ -398,15 +421,12 @@ func _on_delete_confirmed() -> void:
 	pending_delete_meta = {}
 
 func _open_save_dialog() -> void:
-	if(games.is_empty()):
-		Global.alert(tr("error.no_game_selected"))
-		return
+	if(!_ensure_game_selected()): return;
 	_refresh_save_dialog(true)
 
 func _refresh_save_dialog(open_dialog: bool = false) -> void:
-	if(games.is_empty()):
-		return
-	var game_name := str(_selected_game().get("name", ""))
+	if(games.is_empty()): return;
+	var game_name := _selected_game_name()
 	var config_result := Filesys.load_game_config(game_name)
 	if(!config_result.ok):
 		Global.alert(config_result.message)
@@ -425,28 +445,23 @@ func _on_app_settings_saved(steam_username: String, steam_password: String) -> v
 	_start_worker("app_settings", "Saving app settings...", Callable(self, "_thread_save_app_settings").bind(steam_username, steam_password))
 
 func _on_item_settings_saved(new_name: String, steam_game_path: String, save_path: String, thumbnail_path: String, use_steam_launch: bool, is_mod: bool) -> void:
-	if(games.is_empty()):
-		Global.alert(tr("error.no_game_selected"));
-		return;
-	var game_name := str(_selected_game().get("name", ""));
+	if(!_ensure_game_selected()): return;
+	var game_name := _selected_game_name()
 	if(is_mod):
 		if(!_has_selected_mod()):
 			Global.alert(tr("error.no_game_selected"));
 			return;
-		var mod_name := str(_selected_mod().get("name", ""));
+		var mod_name := _selected_mod_name()
 		_start_worker("settings", "Saving settings...", Callable(self, "_thread_save_mod_settings").bind(game_name, mod_name, new_name, thumbnail_path), {"game_name": game_name, "mod_name": new_name})
 		return
 	_start_worker("settings", "Saving settings...", Callable(self, "_thread_save_game_settings").bind(game_name, new_name, steam_game_path, save_path, thumbnail_path, use_steam_launch), {"game_name": new_name})
 
 func _on_mod_created(mod_name: String, source_path: String) -> void:
-	if(games.is_empty()):
-		Global.alert(tr("error.no_game_selected"));
-		return;
-
-	var game_name := str(_selected_game().get("name", ""));
+	if(!_ensure_game_selected()): return;
+	var game_name := _selected_game_name()
 	var base_mod_name := ""
 	if(_has_selected_mod()):
-		base_mod_name = str(_selected_mod().get("name", ""))
+		base_mod_name = _selected_mod_name()
 	_start_worker("add_mod", tr("status.building_mod_files"), Callable(self, "_thread_add_mod").bind(game_name, source_path, mod_name, base_mod_name), {"mod_name": mod_name})
 
 func _on_maintenance_requested(action: String) -> void:
@@ -493,6 +508,9 @@ func _thread_add_game(executable_path: String, game_name: String) -> Dictionary:
 
 func _thread_add_mod(game_name: String, source_path: String, mod_name: String, base_mod_name: String) -> Dictionary:
 	return Filesys.addMod(game_name, source_path, mod_name, base_mod_name).to_dict();
+
+func _thread_reimport_game(game_name: String, executable_path: String) -> Dictionary:
+	return Filesys.reimport_game(game_name, executable_path).to_dict();
 
 func _thread_download_patchers() -> Dictionary:
 	return Steam.ensure_patchers().to_dict();

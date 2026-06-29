@@ -53,19 +53,16 @@ func login(username: String, password: String) -> Util.Stats:
 	Util.set_loading_status(Util.trans("status.steam_login_waiting_guard"))
 	var exit_code := OS.execute(depot_downloader_path, args, output, true, false)
 	Filesys.delete_directory_if_exists(temp_dir)
-	if(exit_code != 0):
-		return Util.Stats.new(false, _format_depotdownloader_error("\n".join(output), true))
+	if(exit_code != 0): return Util.Stats.new(false, _format_depotdownloader_error("\n".join(output), true));
 	return Util.Stats.new(true, "status.steam_logged_in")
 
 func logout() -> Util.Stats:
 	var local_app_data := OS.get_environment("LOCALAPPDATA").strip_edges()
-	if(local_app_data.is_empty()):
-		return Util.Stats.new(true, "status.ok")
+	if(local_app_data.is_empty()): return Util.Stats.new(true, "status.ok");
 	var isolated_storage_dir := local_app_data.path_join("IsolatedStorage")
-	if(!DirAccess.dir_exists_absolute(isolated_storage_dir)):
-		return Util.Stats.new(true, "status.ok")
+	if(!DirAccess.dir_exists_absolute(isolated_storage_dir)): return Util.Stats.new(true, "status.ok");
 	_delete_account_config_files(isolated_storage_dir)
-	return Util.Stats.new(true, "status.ok")
+	return Util.Stats.new(true, "status.ok");
 
 func ensure_patchers() -> Util.Stats:
 	Util.set_loading_status("Checking patcher database...")

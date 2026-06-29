@@ -6,7 +6,7 @@ signal confirmed
 @onready var message_label: Label = %DeleteConfirmLabel
 @onready var confirm_button: Button = %ConfirmButton
 
-func open_dialog(message: String, title: String = "ui.common.delete", confirm_text: String = "ui.common.delete") -> void:
+func open(message: String, title: String, confirm_text: String) -> void:
 	title_label.text = tr(title)
 	message_label.text = message
 	confirm_button.text = tr(confirm_text)

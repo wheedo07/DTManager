@@ -416,9 +416,10 @@ func _open_delete_confirm(action: String, meta: Dictionary) -> void:
 			confirm_text = "ui.common.save"
 		"save":
 			message = tr("ui.delete.confirm_save") % str(meta.get("slot_name", ""))
+			confirm_text = "ui.common.overwrite"
 		_:
 			message = tr("ui.delete.confirm_game") % str(meta.get("game_name", ""))
-	confirm_dialog.open_dialog(message, title, confirm_text)
+	confirm_dialog.open(message, title, confirm_text)
 
 func _on_delete_confirmed() -> void:
 	match pending_delete_action:

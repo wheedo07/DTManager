@@ -13,6 +13,7 @@ ui.dialog.save_slots,Save Slots,세이브 슬롯
 ui.common.create,Create,생성
 ui.common.cancel,Cancel,취소
 ui.common.delete,Delete,삭제
+ui.common.overwrite,Overwrite,덮어쓰기
 ui.common.save,Save,저장
 ui.common.game_name,Game Name,게임 이름
 ui.common.mod_name,Mod Name,모드 이름
